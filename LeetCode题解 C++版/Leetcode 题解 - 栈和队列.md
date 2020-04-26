@@ -1,11 +1,4 @@
-* [1. 用栈实现队列](#1-用栈实现队列)
-* [2. 用队列实现栈](#2-用队列实现栈)
-* [3. 最小值栈](#3-最小值栈)
-* [4. 用栈实现括号匹配](#4-用栈实现括号匹配)
-* [5. 数组中元素与下一个比它大的元素之间的距离](#5-数组中元素与下一个比它大的元素之间的距离)
-* [6. 循环数组中比当前元素大的下一个元素](#6-循环数组中比当前元素大的下一个元素)
-
-
+[TOC]
 
 # 1. 用栈实现队列
 
@@ -244,7 +237,40 @@ public:
 
 
 
-# 5. 数组中元素与下一个比它大的元素之间的距离
+# 单调栈
+
+**单调栈定义**
+
+- 单调栈是按单调性维护栈内元素的栈。分为单调递增栈和单调递减栈。
+
+**单调栈适合的问题**
+
+- 计算数组中每个数右边（或左边）第一个比它大（或小）的数，并计算二者之间的距离
+- 寻找数组中的某个子数组，使得子数组中的最小值乘以子数组的长度最大
+- 寻找数组中的某个子数组，使得子数组中最小值乘以子数组所有元素和最大
+
+<img src="https://pic.leetcode-cn.com/90a071c6ff964fad556b7a28757d531288fcf5ea2fdbf8e2bdf0937f8a14f1fa-file_1560500620573" alt="ink-image" style="zoom: 20%;" />
+
+下一个更大的数，[代码模板](https://labuladong.gitbook.io/algo/shu-ju-jie-gou-xi-lie/dan-tiao-zhan)：
+
+```C++
+vector<int> nextGreaterElement(vector<int>& nums) {
+    vector<int> ans(nums.size()); // 存放答案的数组
+    stack<int> s;
+    for (int i = nums.size() - 1; i >= 0; i--) { // 倒着往栈里放
+        while (!s.empty() && s.top() <= nums[i]) { // 判定个子高矮
+            s.pop(); // 矮个起开，反正也被挡着了。。。
+        }
+        ans[i] = s.empty() ? -1 : s.top(); // 这个元素身后的第一个高个
+        s.push(nums[i]); // 入栈，接受之后的身高判定吧！
+    }
+    return ans;
+}
+```
+
+
+
+## 1. 数组中元素与下一个比它大的元素之间的距离
 
 739\. Daily Temperatures  / 每日温度 (Medium)
 
@@ -255,26 +281,50 @@ Input: [73, 74, 75, 71, 69, 72, 76, 73]
 Output: [1, 1, 4, 2, 1, 1, 0, 0]
 ```
 
-**题解**：在遍历数组时用栈把数组中的数存起来，如果当前遍历的数比栈顶元素来的大，说明栈顶元素的下一个比它大的数就是当前元素。
+**题解**：此题需要借助**递减栈** ，即栈里只有递减元素。在遍历数组时用栈把数组中的数存起来（此题需要**存元素下标**），如果当前遍历的数比栈顶元素来的大，说明栈顶元素的下一个比它大的数就是当前元素。
 
 具体操作：
 
-遍历整个数组，如果栈不空，且当前数字大于栈顶元素，那么如果直接入栈的话就不是 递减栈 ，所以需要取出栈顶元素，由于当前数字大于栈顶元素的数字，而且一定是第一个大于栈顶元素的数，直接求出下标差就是二者的距离。
+遍历整个数组，若栈不空，且当前数字大于栈顶元素，那么若直接入栈的话就不是递减栈 ，所以需要取出栈顶元素，由于当前数字大于栈顶元素的数字，而且一定是第一个大于栈顶元素的数，直接求出下标差就是二者的距离。
 
 继续看新的栈顶元素，直到当前数字小于等于栈顶元素停止，然后将数字入栈，这样就可以一直保持递减栈，且每个数字和第一个大于它的数的距离也可以算出来。
 
-```java
+<img src="https://pic.leetcode-cn.com/7a133e857271e638c04b3a27c1eabc29570e585cc44d7da60eb039459a7f89cd-739.gif" alt="739.gif" style="zoom: 33%;" />
+
+写法1：通用写法
+
+```C++
+class Solution {
+public:
+    vector<int> dailyTemperatures(vector<int>& T) {
+        vector<int> res(T.size());
+        stack<int> stk;
+        for(int i = T.size() - 1; i >= 0; i--) { // 倒着往栈里放
+            while(!stk.empty() && T[i] >= T[stk.top()]) { // 小的出栈
+                stk.pop();
+            }
+            res[i] = stk.empty() ? 0 : (stk.top() - i); // 栈中留下的即为大的
+            stk.push(i); // 入栈等待判定
+        }
+        return res;
+    }
+};
+```
+
+写法2：
+
+```C++
 class Solution {
 public:
     vector<int> dailyTemperatures(vector<int>& T) {
         vector<int> res(T.size(), 0);
         stack<int> stk;
         for(int i = 0; i < T.size(); i++) {
-            while(!stk.empty() && T[i] > T[stk.top()]) {
-                int t = stk.top(); stk.pop();
-                res[t] = i - t;
+            while(!stk.empty() && T[i] > T[stk.top()]) { // 比栈顶大
+                res[stk.top()] = i - stk.top(); // 计算距离
+                stk.pop(); // 栈顶出栈
             }
-            stk.push(i);
+            stk.push(i); // 入栈等待判定
         }
         return res;
     }
@@ -283,7 +333,46 @@ public:
 
 
 
-# 6. 循环数组中比当前元素大的下一个元素
+## 2. 数组1中元素在数组2中的下一个比它大的值
+
+496\. Next Greater Element I / 下一个更大元素 I（Easy）
+
+[力扣](https://leetcode-cn.com/problems/next-greater-element-i/)
+
+给定两个没有重复元素的数组 nums1 和 nums2 ，其中nums1 是 nums2 的**子集**。找到 nums1 中每个元素在 nums2 中的下一个比其大的值。
+
+```
+输入: nums1 = [4,1,2], nums2 = [1,3,4,2].
+输出: [-1,3,-1]
+```
+
+**题解**：nums1中的元素相当于键，可以忽略数组 nums1，先对将 nums2 中的每一个元素，求出其下一个更大的元素。随后对于将这些答案放入哈希表中，再遍历数组 nums1，并直接找出答案。
+
+```C++
+class Solution {
+public:
+    vector<int> nextGreaterElement(vector<int>& nums1, vector<int>& nums2) {
+        vector<int> res(nums1.size());
+        stack<int> stk;
+        unordered_map<int, int> mp;
+
+        for(int i = nums2.size() - 1; i >= 0; i--) { // 倒着入栈
+            while(!stk.empty() && stk.top() <= nums2[i]) stk.pop(); // 小的出栈
+            mp[nums2[i]] = stk.empty() ? -1 : stk.top(); // 大的保存到哈希表
+            stk.push(nums2[i]); // 入栈等待判定
+        }
+
+        for(int i = 0; i < nums1.size(); i++) { // 取哈希表中元素, 键为nums1中元素
+            res[i] = mp[nums1[i]];
+        }
+        return res;
+    }
+};
+```
+
+
+
+## 3. 循环数组中比当前元素大的下一个元素
 
 503\. Next Greater Element II / 下一个更大元素 II (Medium)
 
@@ -297,23 +386,48 @@ The number 2 can't find next greater number;
 The second 1's next greater number needs to search circularly, which is also 2.
 ```
 
-与 739. Daily Temperatures (Medium) 不同的是，数组是循环数组，并且最后要求的不是距离而是下一个元素。
+[**题解**](https://leetcode-cn.com/problems/next-greater-element-ii/solution/xia-yi-ge-geng-da-yuan-su-ii-by-leetcode/)：与 739. Daily Temperatures (Medium) 不同的是，数组是循环数组，并且最后要求的不是距离而是下一个元素。
 
-```java
-public int[] nextGreaterElements(int[] nums) {
-    int n = nums.length;
-    int[] next = new int[n];
-    Arrays.fill(next, -1);
-    Stack<Integer> pre = new Stack<>();
-    for (int i = 0; i < n * 2; i++) {
-        int num = nums[i % n];
-        while (!pre.isEmpty() && nums[pre.peek()] < num) {
-            next[pre.pop()] = num;
+写法1：通用写法
+
+```C++
+class Solution {
+public:
+    vector<int> nextGreaterElements(vector<int>& nums) {
+        int n = nums.size();
+        vector<int> res(n);
+        stack<int> stk;
+        for(int i = 2*n - 1; i >= 0; i--) { // 倒着入栈，假装数组长度翻倍
+            int num = nums[i % n]; // 获取实际值
+            while(!stk.empty() && stk.top() <= num) stk.pop(); // 小的出栈
+            res[i % n] = stk.empty() ? -1 : stk.top(); // 保存大的
+            stk.push(num); // 入栈等待判定
         }
-        if (i < n){
-            pre.push(i);
-        }
+        return res;
     }
-    return next;
-}
+};
+```
+
+写法2：遍历两倍的数组，然后还是坐标 i 对 n 取余，取出数字，如果此时栈不为空，且栈顶元素小于当前数字，说明当前数字就是栈顶元素的右边第一个较大数，那么建立二者的映射，并且去除当前栈顶元素，最后如果 i 小于n，则把 i 压入栈。因为res的长度必须是 n，超过 n 的部分我们只是为了给之前栈中的数字找较大值，所以不能压入栈。
+
+```C++
+class Solution {
+public:
+    vector<int> nextGreaterElements(vector<int>& nums) {
+        int n = nums.size();
+        vector<int> res(n, -1);
+        stack<int> stk;
+        for(int i = 0; i < n * 2; i++) { // 循环2次即可
+            int num = nums[i % n]; // 循环数组下标转换为非循环下标
+            while(!stk.empty() && num > nums[stk.top()]) {
+                res[stk.top()] = num; // 保存下一个更大的数
+                stk.pop();
+            }
+            if(i < n) // 仅第一次循环入栈，第二次只需寻找更大的数
+                stk.push(i);
+        }
+
+        return res;
+    }
+};
 ```

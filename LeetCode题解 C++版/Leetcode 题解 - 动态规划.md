@@ -128,6 +128,78 @@ public:
 
 <div align="center"> <img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/879814ee-48b5-4bcb-86f5-dcc400cb81ad.png" width="250px"> </div><br>
 
+# 三角形路径
+
+120\. 三角形最小路径和 （Medium）[力扣](https://leetcode-cn.com/problems/triangle/)
+
+**题解**：
+
+方法1：自顶向下
+
+需注意三个问题：1、每行边界左右的两个位置要初始化为正无穷  2、显式初始化第一行后，从第二行开始计算dp数组 3、从第一行第一列开始枚举，因而第`[i, j]`个数字在输入数组中为`triangle[i - 1][j - 1]`
+
+```C++
+class Solution {
+public:
+    int minimumTotal(vector<vector<int>>& triangle) {
+        int n = triangle.size();
+        vector<vector<int>> dp(n + 1, vector<int>(n + 2, 0x7FFFFFFF)); // 每行多初始化两位
+
+        dp[1][1] = triangle[0][0]; // 初始化第一行
+        for(int i = 2; i <= n; i++) { // 从第二行开始
+            for(int j = 1; j <= i; j++) {
+                dp[i][j] = min(dp[i - 1][j - 1], dp[i - 1][j]) + triangle[i - 1][j - 1];
+            }
+        }
+        return *min_element(dp.back().begin(), dp.back().end());
+    }
+};
+```
+
+方法2：自底向上
+
+需注意两个问题：1、从第一行第一列开始枚举，并且会枚举到`i+1`及`j+1` 因而dp数组需要多初始化2位  2、从第1行第一列开始枚举，因而第`[i, j]`个数字在输入数组中为`triangle[i - 1][j - 1]`
+
+```C++
+class Solution {
+public:
+    int minimumTotal(vector<vector<int>>& triangle) {
+        int n = triangle.size();
+        vector<vector<int>> dp(n + 2, vector<int>(n + 2));
+
+        for(int i = n; i >= 1; i--) {
+            for(int j = i; j >= 1; j--) {
+                dp[i][j] = min(dp[i + 1][j + 1], dp[i + 1][j]) + triangle[i - 1][j - 1];
+            }
+        }
+
+        return dp[1][1];
+    }
+};
+```
+
+优化为一维动规：
+
+dp数组的计算为从下至上，状态转移方程与下一行的右侧有关，因而**第二层循环需要逆序**
+
+```C++
+class Solution {
+public:
+    int minimumTotal(vector<vector<int>>& triangle) {
+        int n = triangle.size();
+        vector<int> dp(n + 2);
+        for (int i = n; i >= 1; --i) {
+            for (int j = 1; j <= i; ++j) {
+                dp[j] = min(dp[j], dp[j + 1]) + triangle[i - 1][j - 1];
+            }
+        }
+        return dp[1];
+    }
+};
+```
+
+
+
 # 矩阵路径
 
 ## 1. 矩阵的最小路径和
@@ -520,30 +592,22 @@ public int numDecodings(String s) {
 [Leetcode](https://leetcode.com/problems/longest-increasing-subsequence/description/) / [力扣](https://leetcode-cn.com/problems/longest-increasing-subsequence/description/)
 
 ```java
-public int lengthOfLIS(int[] nums) {
-    int n = nums.length;
-    int[] dp = new int[n];
-    for (int i = 0; i < n; i++) {
-        int max = 1;
-        for (int j = 0; j < i; j++) {
-            if (nums[i] > nums[j]) {
-                max = Math.max(max, dp[j] + 1);
+class Solution {
+public:
+    int lengthOfLIS(vector<int>& nums) {
+        vector<int> dp(nums.size() + 1, 0);
+
+        // 求以nums[i]结尾的上升子序列的长度的最大值
+        for(int i = 1; i <= nums.size(); i++) {
+            dp[i] = 1;
+            for(int j = 1; j < i; j++) {
+                if(nums[i - 1] > nums[j - 1])
+                    dp[i] = max(dp[i], dp[j] + 1);
             }
         }
-        dp[i] = max;
+        return *max_element(dp.begin(), dp.end()); // 求所有上升子序列的最大值
     }
-    return Arrays.stream(dp).max().orElse(0);
-}
-```
-
-使用 Stream 求最大值会导致运行时间过长，可以改成以下形式：
-
-```java
-int ret = 0;
-for (int i = 0; i < n; i++) {
-    ret = Math.max(ret, dp[i]);
-}
-return ret;
+};
 ```
 
 以上解法的时间复杂度为 O(N<sup>2</sup>)，可以使用二分查找将时间复杂度降低为 O(NlogN)。
