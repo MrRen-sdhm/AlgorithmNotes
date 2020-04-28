@@ -1,4 +1,3 @@
-<!-- GFM-TOC -->
 * [1. 找出两个链表的交点](#1-找出两个链表的交点)
 * [2. 链表反转](#2-链表反转)
 * [3. 归并两个有序的链表](#3-归并两个有序的链表)
@@ -9,10 +8,11 @@
 * [8. 回文链表](#8-回文链表)
 * [9. 分隔链表](#9-分隔链表)
 * [10. 链表元素按奇偶聚集](#10-链表元素按奇偶聚集)
-<!-- GFM-TOC -->
 
 
 链表是空节点，或者有一个值和一个指向下一个链表的指针，因此很多链表问题可以用递归来处理。
+
+
 
 #  1. 找出两个链表的交点
 
@@ -50,15 +50,18 @@ B:    b1 → b2 → b3        e1 → e2
 
 如果不存在交点，那么 a + b = b + a，以下实现代码中 l1 和 l2 会同时为 null，从而退出循环。
 
-```java
-public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
-    ListNode l1 = headA, l2 = headB;
-    while (l1 != l2) {
-        l1 = (l1 == null) ? headB : l1.next;
-        l2 = (l2 == null) ? headA : l2.next;
+```C++
+class Solution {
+public:
+    ListNode *getIntersectionNode(ListNode *headA, ListNode *headB) {
+        ListNode *p1 = headA, *p2 = headB;
+        while(p1 != p2) {
+            p1 = !p1 ? headB : p1->next;
+            p2 = !p2 ? headA : p2->next;
+        }
+        return p1;
     }
-    return l1;
-}
+};
 ```
 
 如果只是判断是否存在交点，那么就是另一个问题，即 [编程之美 3.6]() 的问题。有两种解法：
@@ -66,41 +69,72 @@ public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
 - 把第一个链表的结尾连接到第二个链表的开头，看第二个链表是否存在环；
 - 或者直接比较两个链表的最后一个节点是否相同。
 
+
+
 #  2. 链表反转
 
 206\. Reverse Linked List (Easy)
 
 [Leetcode](https://leetcode.com/problems/reverse-linked-list/description/) / [力扣](https://leetcode-cn.com/problems/reverse-linked-list/description/)
 
-递归
+**题解**：
 
-```java
-public ListNode reverseList(ListNode head) {
-    if (head == null || head.next == null) {
-        return head;
+方法1：指针操作
+
+```C++
+class Solution {
+public:
+    ListNode* reverseList(ListNode* head) {
+        ListNode *pre = NULL, *next = NULL;
+
+        while(head) {
+            next = head->next;
+            head->next = pre;
+            pre = head;
+            head = next;
+        }
+        return pre;
     }
-    ListNode next = head.next;
-    ListNode newHead = reverseList(next);
-    next.next = head;
-    head.next = null;
-    return newHead;
-}
+};
 ```
 
-头插法
+方法2：递归
 
-```java
-public ListNode reverseList(ListNode head) {
-    ListNode newHead = new ListNode(-1);
-    while (head != null) {
-        ListNode next = head.next;
-        head.next = newHead.next;
-        newHead.next = head;
-        head = next;
+```C++
+class Solution {
+public:
+    ListNode* reverseList(ListNode* head) {
+        if(!head || !head->next) return head;
+
+        ListNode *next = head->next;
+        ListNode *newhead = reverseList(next);
+        next->next = head;
+        head->next = NULL;
+        return newhead;
     }
-    return newHead.next;
-}
+};
 ```
+
+方法3：头插法
+
+```C++
+class Solution {
+public:
+    ListNode* reverseList(ListNode* head) {
+        ListNode *newhead = new ListNode(-1);
+
+        while(head) {
+            ListNode *next = head->next;
+            head->next = newhead->next;
+            newhead->next = head;
+            head = next;
+        }
+        return newhead->next;
+    }
+};
+```
+
+
 
 #  3. 归并两个有序的链表
 
@@ -108,7 +142,7 @@ public ListNode reverseList(ListNode head) {
 
 [Leetcode](https://leetcode.com/problems/merge-two-sorted-lists/description/) / [力扣](https://leetcode-cn.com/problems/merge-two-sorted-lists/description/)
 
-```java
+```C++
 public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
     if (l1 == null) return l2;
     if (l2 == null) return l1;
@@ -133,7 +167,7 @@ Given 1->1->2, return 1->2.
 Given 1->1->2->3->3, return 1->2->3.
 ```
 
-```java
+```C++
 public ListNode deleteDuplicates(ListNode head) {
     if (head == null || head.next == null) return head;
     head.next = deleteDuplicates(head.next);
@@ -152,7 +186,7 @@ Given linked list: 1->2->3->4->5, and n = 2.
 After removing the second node from the end, the linked list becomes 1->2->3->5.
 ```
 
-```java
+```C++
 public ListNode removeNthFromEnd(ListNode head, int n) {
     ListNode fast = head;
     while (n-- > 0) {
@@ -181,7 +215,7 @@ Given 1->2->3->4, you should return the list as 2->1->4->3.
 
 题目要求：不能修改结点的 val 值，O(1) 空间复杂度。
 
-```java
+```C++
 public ListNode swapPairs(ListNode head) {
     ListNode node = new ListNode(-1);
     node.next = head;
@@ -212,7 +246,7 @@ Output: 7 -> 8 -> 0 -> 7
 
 题目要求：不能修改原始链表。
 
-```java
+```C++
 public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
     Stack<Integer> l1Stack = buildStack(l1);
     Stack<Integer> l2Stack = buildStack(l2);
@@ -250,7 +284,7 @@ private Stack<Integer> buildStack(ListNode l) {
 
 切成两半，把后半段反转，然后比较两半是否相等。
 
-```java
+```C++
 public boolean isPalindrome(ListNode head) {
     if (head == null || head.next == null) return true;
     ListNode slow = head, fast = head.next;
@@ -307,7 +341,7 @@ The input has been split into consecutive parts with size difference at most 1, 
 
 题目描述：把链表分隔成 k 部分，每部分的长度都应该尽可能相同，排在前面的长度应该大于等于后面的。
 
-```java
+```C++
 public ListNode[] splitListToParts(ListNode root, int k) {
     int N = 0;
     ListNode cur = root;
@@ -345,7 +379,7 @@ Given 1->2->3->4->5->NULL,
 return 1->3->5->2->4->NULL.
 ```
 
-```java
+```C++
 public ListNode oddEvenList(ListNode head) {
     if (head == null) {
         return head;

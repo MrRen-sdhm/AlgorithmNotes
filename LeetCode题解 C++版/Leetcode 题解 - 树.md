@@ -608,25 +608,32 @@ public int findSecondMinimumValue(TreeNode root) {
 [Leetcode](https://leetcode.com/problems/average-of-levels-in-binary-tree/description/) / [力扣](https://leetcode-cn.com/problems/average-of-levels-in-binary-tree/description/)
 
 ```C++
-public List<Double> averageOfLevels(TreeNode root) {
-    List<Double> ret = new ArrayList<>();
-    if (root == null) return ret;
-    Queue<TreeNode> queue = new LinkedList<>();
-    queue.add(root);
-    while (!queue.isEmpty()) {
-        int cnt = queue.size();
-        double sum = 0;
-        for (int i = 0; i < cnt; i++) {
-            TreeNode node = queue.poll();
-            sum += node.val;
-            if (node.left != null) queue.add(node.left);
-            if (node.right != null) queue.add(node.right);
+class Solution {
+public:
+    vector<double> averageOfLevels(TreeNode* root) {
+        vector<double> res;
+        if(!root) return res;
+
+        queue<TreeNode*> qu;
+        qu.push(root);
+
+        while(!qu.empty()) {
+            int cnt = qu.size();
+            long double sum = 0;
+            for(int i = 0; i < cnt; i++) {
+                auto t = qu.front(); qu.pop();
+                sum += t->val;
+                if(t->left) qu.push(t->left);
+                if(t->right) qu.push(t->right);
+            }
+            res.push_back(sum/cnt);
         }
-        ret.add(sum / cnt);
+        return res;
     }
-    return ret;
-}
+};
 ```
+
+
 
 ## 2. 得到左下角的节点
 
@@ -649,18 +656,54 @@ Output:
 7
 ```
 
+**题解**：
+
+方法1：先添加右子节点再添加左子节点，即可保证最后一个出队的为最底层的最左侧节点
+
 ```C++
-public int findBottomLeftValue(TreeNode root) {
-    Queue<TreeNode> queue = new LinkedList<>();
-    queue.add(root);
-    while (!queue.isEmpty()) {
-        root = queue.poll();
-        if (root.right != null) queue.add(root.right);
-        if (root.left != null) queue.add(root.left);
+class Solution {
+public:
+    int findBottomLeftValue(TreeNode* root) {
+        queue<TreeNode*> qu;
+        qu.push(root);
+
+        vector<int> vec;
+        while(!qu.empty()) {
+            root = qu.front(); qu.pop();
+            if(root->right) qu.push(root->right);
+            if(root->left) qu.push(root->left);
+        }
+        return root->val;
     }
-    return root.val;
-}
+};
 ```
+
+方法2：设置一个变量来保存每层的最左侧节点，最后此变量保存的即为最后一层的最左侧节点
+
+```C++
+class Solution {
+public:
+    int findBottomLeftValue(TreeNode* root) {
+        queue<TreeNode*> qu;
+        qu.push(root);
+        int res = 0;
+
+        vector<int> vec;
+        while(!qu.empty()) {
+            int cnt = qu.size();
+            for(int i = 0; i < cnt; i++) {
+                auto t = qu.front(); qu.pop();
+                if(i == 0) res =  t->val; // 保存每行第一个
+                if(t->left) qu.push(t->left);
+                if(t->right) qu.push(t->right);
+            }
+        }
+        return res;
+    }
+};
+```
+
+
 
 # 前中后序遍历
 
@@ -711,77 +754,231 @@ void dfs(TreeNode root) {
 }
 ```
 
+
+
 ## 1. 非递归实现二叉树的前序遍历
 
-144\. Binary Tree Preorder Traversal (Medium)
+144\. Binary Tree Preorder Traversal / 二叉树的前序遍历 (Medium)
 
 [Leetcode](https://leetcode.com/problems/binary-tree-preorder-traversal/description/) / [力扣](https://leetcode-cn.com/problems/binary-tree-preorder-traversal/description/)
 
+**题解：**从根节点开始，每次迭代弹出当前栈顶元素，并将其孩子节点压入栈中，先压右孩子再压左孩子。
+
+迭代写法1：
+
 ```C++
-public List<Integer> preorderTraversal(TreeNode root) {
-    List<Integer> ret = new ArrayList<>();
-    Stack<TreeNode> stack = new Stack<>();
-    stack.push(root);
-    while (!stack.isEmpty()) {
-        TreeNode node = stack.pop();
-        if (node == null) continue;
-        ret.add(node.val);
-        stack.push(node.right);  // 先右后左，保证左子树先遍历
-        stack.push(node.left);
+class Solution {
+public:
+    vector<int> preorderTraversal(TreeNode* root) {
+        vector<int> res;
+        stack<TreeNode*> stk;
+        
+        stk.push(root);
+        while(!stk.empty()) {
+            auto node = stk.top(); stk.pop();
+            if(!node) continue;
+
+            res.push_back(node->val);
+            stk.push(node->right); // 先右后左，保证左子树先遍历
+            stk.push(node->left);
+        }
+        return res;
     }
-    return ret;
-}
+};
 ```
+
+迭代写法2：
+
+```C++
+class Solution {
+public:
+    vector<int> preorderTraversal(TreeNode* root) {
+        vector<int> res;
+        stack<TreeNode*> stk;
+
+        if(!root) return res;
+        
+        stk.push(root);
+        while(!stk.empty()) {
+            auto node = stk.top(); stk.pop();
+
+            res.push_back(node->val);
+            if(node->right) stk.push(node->right); // 先右后左，保证左子树先遍历
+            if(node->left) stk.push(node->left);
+        }
+        return res;
+    }
+};
+```
+
+递归写法：
+
+```C++
+class Solution {
+public:
+    vector<int> res;
+    vector<int> preorderTraversal(TreeNode* root) {
+        if(!root) return res;
+
+        res.push_back(root->val);
+        preorderTraversal(root->left);
+        preorderTraversal(root->right);
+        return res;
+    }
+};
+```
+
+
 
 ## 2. 非递归实现二叉树的后序遍历
 
-145\. Binary Tree Postorder Traversal (Medium)
+145\. Binary Tree Postorder Traversal / 二叉树的后序遍历 (Medium)
 
 [Leetcode](https://leetcode.com/problems/binary-tree-postorder-traversal/description/) / [力扣](https://leetcode-cn.com/problems/binary-tree-postorder-traversal/description/)
 
 前序遍历为 root -> left -> right，后序遍历为 left -> right -> root。可以修改前序遍历成为 root -> right -> left，那么这个顺序就和后序遍历正好相反。
 
+使用栈遍历二叉树，先入栈的为根节点，控制左右节点的入栈顺序可实现root -> left -> right 和 root -> right -> left 两种遍历顺序，即先序遍历和反向先序遍历
+
+迭代写法：
+
 ```C++
-public List<Integer> postorderTraversal(TreeNode root) {
-    List<Integer> ret = new ArrayList<>();
-    Stack<TreeNode> stack = new Stack<>();
-    stack.push(root);
-    while (!stack.isEmpty()) {
-        TreeNode node = stack.pop();
-        if (node == null) continue;
-        ret.add(node.val);
-        stack.push(node.left);
-        stack.push(node.right);
+class Solution {
+public:
+    vector<int> postorderTraversal(TreeNode* root) {
+        vector<int> res;
+        stack<TreeNode*> stk;
+        
+        stk.push(root);
+        while(!stk.empty()) {
+            auto node = stk.top(); stk.pop();
+            if(!node) continue;
+
+            res.push_back(node->val);
+            stk.push(node->left); // 先左后右，保证右子树先遍历，实现反向先序遍历
+            stk.push(node->right);
+        }
+        reverse(res.begin(), res.end()); // 反向先序遍历的结果为后序遍历
+        return res;
     }
-    Collections.reverse(ret);
-    return ret;
-}
+};
 ```
 
-## 3. 非递归实现二叉树的中序遍历
+递归写法：
 
-94\. Binary Tree Inorder Traversal (Medium)
+```C++
+class Solution {
+public:
+    vector<int> res;
+    vector<int> postorderTraversal(TreeNode* root) {
+        if(!root) return res;
+
+        postorderTraversal(root->left);
+        postorderTraversal(root->right);
+        res.push_back(root->val);
+        return res;
+    }
+};
+```
+
+
+
+## 3. 非递归实现二叉树的中序遍历⭐️
+
+94\. Binary Tree Inorder Traversal / 二叉树的中序遍历 (Medium)
 
 [Leetcode](https://leetcode.com/problems/binary-tree-inorder-traversal/description/) / [力扣](https://leetcode-cn.com/problems/binary-tree-inorder-traversal/description/)
 
-```C++
-public List<Integer> inorderTraversal(TreeNode root) {
-    List<Integer> ret = new ArrayList<>();
-    if (root == null) return ret;
-    Stack<TreeNode> stack = new Stack<>();
-    TreeNode cur = root;
-    while (cur != null || !stack.isEmpty()) {
-        while (cur != null) {
-            stack.push(cur);
-            cur = cur.left;
-        }
-        TreeNode node = stack.pop();
-        ret.add(node.val);
-        cur = node.right;
-    }
-    return ret;
-}
+**[题解](https://leetcode-cn.com/problems/binary-tree-inorder-traversal/solution/dong-hua-yan-shi-94-er-cha-shu-de-zhong-xu-bian-li/)：**
+
+递归实现时，是函数自己调用自己，一层层的嵌套下去，操作系统/虚拟机自动帮我们用栈来保存了每个调用的函数，现在我们需要自己模拟这样的调用过程。
+递归的调用过程是这样的：
+
 ```
+dfs(root.left)
+	dfs(root.left)
+		dfs(root.left)
+			为null返回
+		打印节点
+		dfs(root.right)
+			dfs(root.left)
+				dfs(root.left)
+				........
+```
+
+递归的调用过程是不断往左边走，当左边走不下去了，就打印节点，并转向右边，然后右边继续这个过程。
+我们在迭代实现时，就可以用栈来模拟上面的调用过程。
+
+<img src="https://pic.leetcode-cn.com/47fff35dd3fd640ba60349c78b85242ae8f4b850f06a282cd7e92c91e6eff406-1.gif" alt="1.gif" style="zoom: 67%;" />
+
+迭代写法1：
+
+```C++
+class Solution {
+public:
+    vector<int> inorderTraversal(TreeNode* root) {
+        vector<int> res;
+        stack<TreeNode*> stk;
+
+        TreeNode* cur = root;
+        while(cur || !stk.empty()) {
+            if(cur) { // 不断往左子树方向走，将当前节点保存到栈中，模拟递归调用
+                stk.push(cur);
+                cur = cur->left; // 往左边走
+            } else { // 当前节点为空，说明到达左子树叶子节点，逐个弹出节点并保存，然后转向右边节点
+                TreeNode* node = stk.top(); stk.pop();
+                res.push_back(node->val);
+                cur = node->right; // 转向右边
+            }
+        }
+        return res;
+    }
+};
+```
+
+迭代写法2：
+
+```C++
+class Solution {
+public:
+    vector<int> inorderTraversal(TreeNode* root) {
+        vector<int> res;
+        stack<TreeNode*> stk;
+
+        TreeNode* cur = root;
+        while(cur || !stk.empty()) {
+            while(cur) {
+                stk.push(cur);
+                cur = cur->left;
+            }
+
+            TreeNode* node = stk.top(); stk.pop();
+            res.push_back(node->val);
+            cur = node->right;
+        }
+        return res;
+    }
+};
+```
+
+递归写法：
+
+```C++
+class Solution {
+public:
+    vector<int> res;
+    vector<int> inorderTraversal(TreeNode* root) {
+        if(!root) return res;
+
+        inorderTraversal(root->left);
+        res.push_back(root->val);
+        inorderTraversal(root->right);
+        return res;
+    }
+};
+```
+
+
 
 # BST
 
