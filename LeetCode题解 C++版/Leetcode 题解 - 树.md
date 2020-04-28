@@ -36,11 +36,22 @@
     * [2. 实现一个 Trie，用来求前缀和](#2-实现一个-trie，用来求前缀和)
 
 
+
 # 递归
 
 一棵树要么是空树，要么有两个指针，每个指针指向一棵树。树是一种递归结构，很多树的问题可以使用递归来处理。
 
-## 1. 树的高度
+- **双根递归**：若需要判断两棵树之间的关系，需要将两棵树的根节点传入递归函数，同时进行遍历。可解决的问题：
+  - **与两棵树有关的问题**，如判断一棵树是不是另一棵树的[子树](##8. 子树⭐️)
+  - **判断一棵树的子树的某些性质**，如[路径和III](##7. 统计路径和等于一个数的路径数量⭐️)
+  - **一棵树的某些部分之间的关系**，如[树的对称](##9. 树的对称)
+
+- **双递归**：需要判断一棵树的**所有子树**与另一棵树的关系，那么就需要对这颗树本身进行递归遍历，以获取各个子树根节点，然后通过双根递归判断各子树与另一棵树的关系，因而会用到两个递归函数，可以用于解决与子树相关的问题。
+  - 思想即主函数递归遍历树的每个节点，调用辅助函数对每个节点开始的子树的性质进行判断，并且辅助函数也为递归函数，用于对子树进行遍历。
+
+
+
+## 1. 最大深度
 
 104\. Maximum Depth of Binary Tree / 二叉树的最大深度 (Easy)
 
@@ -71,18 +82,17 @@ class Solution {
 public:
     int res = 0;
     int maxDepth(TreeNode* root) {
-        dfs(0, root);
+        dfs(1, root);
         return res;
     }
 
     void dfs(int cnt, TreeNode* root) {
-        if(!root) {
-            res = max(res, cnt);
-            return;
-        }
+        if(!root) return;
+        if(!root->left && !root->right) res = max(res, cnt); // 叶子节点
 
         dfs(cnt + 1, root->left);
         dfs(cnt + 1, root->right);
+        return;
     }
 };
 ```
@@ -119,7 +129,69 @@ public:
 
 
 
-## 2. 平衡树
+## 2. 最小深度
+
+111\. Minimum Depth of Binary Tree / 二叉树的最小深度 (Easy)
+
+[Leetcode](https://leetcode.com/problems/minimum-depth-of-binary-tree/description/) / [力扣](https://leetcode-cn.com/problems/minimum-depth-of-binary-tree/description/)
+
+树的根节点到叶子节点的最小路径长度
+
+**题解：**
+
+方法1：递归
+
+**需要对左子节点或右子节点为空的情况进行处理**。例如：若左子节点为空，则以当前节点为根节点的子树的最小深度为右子树最小深度加1，而不是左右子树深度最小值的最小值加1
+
+```C++
+class Solution {
+public:
+    int minDepth(TreeNode* root) {
+        if(!root) return 0;
+        int left = minDepth(root->left);
+        int right = minDepth(root->right);
+        if(left == 0 || right == 0) return left + right + 1; // 处理左子节点或右子节点为空
+        return min(left, right) + 1;
+    }
+};
+```
+
+**注意**：求最小深度与求最大深度的代码类似，但还需对左子节点或者右子节点为空的情况进行处理。例如以下二叉树，节点 2 的深度为 1，节点NULL的深度为 0， 如果直接用 `min(left, right) + 1` 求得最终的结果为 `min(0, 1) + 1 = 1`，因而最终结果为1，而正确答案为2。原因就在于NULL节点的深度设为0了，对求最小值有影响，对求最大值无影响。
+
+```
+  1
+ / \
+2  NULL
+```
+
+
+
+方法2：DFS，与求最大深度没什么区别，但返回值需初始化为正无穷
+
+```C++
+class Solution {
+public:
+    int res = 0x7FFFFFFF;
+    int minDepth(TreeNode* root) {
+        if(!root) return 0;
+        dfs(root, 1);
+        return res;
+    }
+
+    void dfs(TreeNode* root, int cnt) {
+        if(!root) return;
+        if(!root->left && !root->right) res = min(res, cnt); // 叶子节点
+
+        dfs(root->left, cnt + 1);
+        dfs(root->right, cnt + 1);
+        return;
+    }
+};
+```
+
+
+
+## 3. 平衡树
 
 110\. Balanced Binary Tree / 平衡二叉树 (Easy)
 
@@ -158,7 +230,7 @@ public:
 
 
 
-## 3. 两节点的最长路径
+## 4. 两节点的最长路径
 
 543\. Diameter of Binary Tree / 二叉树的直径 (Easy)
 
@@ -199,7 +271,7 @@ public:
 };
 ```
 
-## 4. 翻转树
+## 5. 翻转树
 
 226\. Invert Binary Tree / 翻转二叉树 (Easy)
 
@@ -252,7 +324,7 @@ public:
 
 
 
-## 5. 归并两棵树
+## 6. 归并两棵树
 
 617\. Merge Two Binary Trees  / 合并二叉树 (Easy)
 
@@ -303,9 +375,9 @@ public:
 
 
 
-## 6. 判断路径和是否等于一个数
+## 7. 判断路径和是否等于一个数
 
-Leetcdoe : 112. Path Sum (Easy)
+Leetcdoe : 112. Path Sum / 路径总和 (Easy)
 
 [Leetcode](https://leetcode.com/problems/path-sum/description/) / [力扣](https://leetcode-cn.com/problems/path-sum/description/)
 
@@ -325,17 +397,53 @@ return true, as there exist a root-to-leaf path 5->4->11->2 which sum is 22.
 
 路径和定义为从 root 到 leaf 的所有节点的和。
 
+**题解：**
+
+方法1：递归
+
 ```C++
-public boolean hasPathSum(TreeNode root, int sum) {
-    if (root == null) return false;
-    if (root.left == null && root.right == null && root.val == sum) return true;
-    return hasPathSum(root.left, sum - root.val) || hasPathSum(root.right, sum - root.val);
-}
+class Solution {
+public:
+    bool hasPathSum(TreeNode* root, int sum) {
+        if(!root) return false;
+        if(!root->left && !root->right && sum == root->val) return true;
+        return hasPathSum(root->left, sum - root->val) || // 两子树有一棵存在路径即可
+               hasPathSum(root->right, sum - root->val);
+    }
+};
 ```
 
-## 7. 统计路径和等于一个数的路径数量
+方法2：DFS
 
-437\. Path Sum III (Easy)
+```C++
+class Solution {
+public:
+    bool res = false;
+    bool hasPathSum(TreeNode* root, int sum) {
+        if(!root) return false;
+        dfs(root, sum);
+        return res;
+    }
+
+    void dfs(TreeNode* root, int sum) {
+        if(!root) {
+            return;
+        }
+        if(!root->left && !root->right) { // 叶子节点
+            if(sum == root->val) res = true;
+        }
+        
+        dfs(root->left, sum - root->val);
+        dfs(root->right, sum - root->val);
+    }
+};
+```
+
+
+
+## 8. 统计路径和等于一个数的路径数量⭐️
+
+437\. Path Sum III / 路径总和 III (Easy)
 
 [Leetcode](https://leetcode.com/problems/path-sum-iii/description/) / [力扣](https://leetcode-cn.com/problems/path-sum-iii/description/)
 
@@ -359,23 +467,55 @@ Return 3. The paths that sum to 8 are:
 
 路径不一定以 root 开头，也不一定以 leaf 结尾，但是必须连续。
 
-```C++
-public int pathSum(TreeNode root, int sum) {
-    if (root == null) return 0;
-    int ret = pathSumStartWithRoot(root, sum) + pathSum(root.left, sum) + pathSum(root.right, sum);
-    return ret;
-}
+**题解：**
 
-private int pathSumStartWithRoot(TreeNode root, int sum) {
-    if (root == null) return 0;
-    int ret = 0;
-    if (root.val == sum) ret++;
-    ret += pathSumStartWithRoot(root.left, sum - root.val) + pathSumStartWithRoot(root.right, sum - root.val);
-    return ret;
-}
+方法1：**双递归**，以每个节点为根节点，算一遍路径和为sum的有几条，然后加起来
+
+```C++
+class Solution {
+public:
+    int pathSum(TreeNode* root, int sum) { // 递归遍历各个根节点，并统计各节点为根节点的子树
+        if(!root) return 0;
+        return helper(root, sum) + pathSum(root->left, sum) + pathSum(root->right, sum);
+    }
+    int helper(TreeNode* root, int sum) { // 递归统计以某节点为根节点的子树
+        if(!root) return 0;
+        sum -= root->val;
+        return (sum == 0 ? 1 : 0) + helper(root->left, sum) + helper(root->right, sum);
+    }
+};
 ```
 
-## 8. 子树
+方法2：先序遍历每个节点，再对每个节点进行DFS（上题<路径总和>中的方法），搜索和为sum的路径
+
+```C++
+class Solution {
+public:
+    int res = 0;
+    int pathSum(TreeNode* root, int sum) {
+        if(!root) return 0;
+        // 先序遍历各个节点
+        dfs(root, sum); // 在以每个节点为根节点的子树上搜索路径
+        pathSum(root->left, sum);
+        pathSum(root->right, sum);
+        return res;
+    }
+
+    void dfs(TreeNode* root, int sum) {
+        if(!root) {
+            return;
+        }
+        if(sum == root->val) res++;
+        
+        dfs(root->left, sum - root->val);
+        dfs(root->right, sum - root->val);
+    }
+};
+```
+
+
+
+## 9. 子树⭐️
 
 572\. Subtree of Another Tree (Easy)
 
@@ -414,21 +554,65 @@ Given tree t:
 Return false.
 ```
 
-```C++
-public boolean isSubtree(TreeNode s, TreeNode t) {
-    if (s == null) return false;
-    return isSubtreeWithRoot(s, t) || isSubtree(s.left, t) || isSubtree(s.right, t);
-}
+**题解：双递归**
 
-private boolean isSubtreeWithRoot(TreeNode s, TreeNode t) {
-    if (t == null && s == null) return true;
-    if (t == null || s == null) return false;
-    if (t.val != s.val) return false;
-    return isSubtreeWithRoot(s.left, t.left) && isSubtreeWithRoot(s.right, t.right);
-}
+辅助函数执行递归先序遍历，同时遍历两树的各个节点，判断两树是否相同（即各节点是否相等）。
+
+树t为s的子树的条件（满足其一即可）：
+
+- t就等于s本身
+- t是s的左子树的子树
+- t是s的右子树的子树
+
+主函数执行递归先序遍历，判断以 s 树中当前节点开始的树是否与 t 相同、当前节点左子树是否与 t 相同、当前节点右子树是否与 t 相同，有一个相同则 t 为 s 的子树。
+
+```C++
+class Solution {
+public:
+    bool isSubtree(TreeNode* s, TreeNode* t) {
+        if(!s) return false;
+        bool cur = isSametree(s, t); // 判断t是否为当前树相同
+        bool left = isSubtree(s->left, t); // 判断t是否为与前节点左子树相同
+        bool right = isSubtree(s->right, t); // 判断t是否为当前节点右子树相同
+        return cur || left || right; // 当前树、左子树、右子树有一个与t相同则t为s的子树
+    }
+
+    bool isSametree(TreeNode* s, TreeNode* t) { // 判断s是否与t相同
+        if(!s && !t) return true; // 根节点均为空，两树相同
+        if(!s || !t) return false; // 一个根节点为空，另一个不空，两树不同
+
+        if(s->val != t->val) return false; // 节点值不等，一定不同，否则继续判断左右子树
+
+        bool left = isSametree(s->left, t->left);
+        bool right = isSametree(s->right, t->right);
+        return left && right; // 左右子树都相同，两树相同
+    }
+};
 ```
 
-## 9. 树的对称
+化简：
+
+```C++
+class Solution {
+public:
+    bool isSubtree(TreeNode* s, TreeNode* t) {
+        if(!s) return false;
+        // 当前树、左子树、右子树有一个与t相同则t为s的子树
+        return isSametree(s, t) || isSubtree(s->left, t) || isSubtree(s->right, t);
+    }
+
+    bool isSametree(TreeNode* s, TreeNode* t) { // 判断s是否与t相同
+        if(!s && !t) return true; // 根节点均为空，两树相同
+        if(!s || !t) return false; // 一个根节点为空，另一个不空，两树不同
+        if(s->val != t->val) return false; // 节点值不等，一定不同，否则继续判断左右子树
+        return isSametree(s->left, t->left) && isSametree(s->right, t->right); // 左右子树都相同，两树相同
+    }
+};
+```
+
+
+
+## 10. 树的对称
 
 101\. Symmetric Tree (Easy)
 
@@ -442,37 +626,32 @@ private boolean isSubtreeWithRoot(TreeNode s, TreeNode t) {
 3  4 4  3
 ```
 
-```C++
-public boolean isSymmetric(TreeNode root) {
-    if (root == null) return true;
-    return isSymmetric(root.left, root.right);
-}
+**题解：**
 
-private boolean isSymmetric(TreeNode t1, TreeNode t2) {
-    if (t1 == null && t2 == null) return true;
-    if (t1 == null || t2 == null) return false;
-    if (t1.val != t2.val) return false;
-    return isSymmetric(t1.left, t2.right) && isSymmetric(t1.right, t2.left);
-}
-```
+此题判断两个子树之间的关系，必然用到双根递归函数。此题类似于判断两棵树是否相等，相同点是两棵树的结构相同，不同点是相等的两棵树不仅结构相同并且节点值也相同。
 
-## 10. 最小路径
-
-111\. Minimum Depth of Binary Tree (Easy)
-
-[Leetcode](https://leetcode.com/problems/minimum-depth-of-binary-tree/description/) / [力扣](https://leetcode-cn.com/problems/minimum-depth-of-binary-tree/description/)
-
-树的根节点到叶子节点的最小路径长度
+可以发现，一棵树的先序遍历结果与其对称树的反向先序遍历结果相同。因而，同时对两树进行先序遍历，一棵正常先序遍历，一棵反向先序遍历，逐个判断遍历到的节点值是否相等即可判断两棵树是否互为镜像。
 
 ```C++
-public int minDepth(TreeNode root) {
-    if (root == null) return 0;
-    int left = minDepth(root.left);
-    int right = minDepth(root.right);
-    if (left == 0 || right == 0) return left + right + 1;
-    return Math.min(left, right) + 1;
-}
+class Solution {
+public:
+    bool isSymmetric(TreeNode* root) {
+        if(!root) return true;
+        return isSymmetric(root->left, root->right);
+    }
+
+    bool isSymmetric(TreeNode* t1, TreeNode* t2) {
+        if(!t1 && !t2) return true; // 同时为空，为对称
+        if(!t1 || !t2) return false; // 一个为空，一个不空，一定不对称
+        if(t1->val != t2->val) return false; // 节点值不相等，一定不对称，否则继续遍历
+        bool left = isSymmetric(t1->left, t2->right); // 同时对左子树进行先序遍历
+        bool right = isSymmetric(t1->right, t2->left); // 右子树进行反向先序遍历
+        return left && right; // 左子树对称并且右子树对称，则此树对称
+    }
+};
 ```
+
+
 
 ## 11. 统计左叶子节点的和
 
@@ -502,6 +681,8 @@ private boolean isLeaf(TreeNode node){
     return node.left == null && node.right == null;
 }
 ```
+
+
 
 ## 12. 相同节点值的最大路径长度
 
@@ -538,6 +719,8 @@ private int dfs(TreeNode root){
 }
 ```
 
+
+
 ## 13. 间隔遍历
 
 337\. House Robber III (Medium)
@@ -563,6 +746,8 @@ public int rob(TreeNode root) {
     return Math.max(val1, val2);
 }
 ```
+
+
 
 ## 14. 找出二叉树中第二小的节点
 
@@ -597,9 +782,13 @@ public int findSecondMinimumValue(TreeNode root) {
 }
 ```
 
+
+
 # 层次遍历
 
 使用 BFS 进行层次遍历。不需要使用两个队列来分别存储当前层的节点和下一层的节点，因为在开始遍历一层的节点时，当前队列中的节点数就是当前层的节点数，只要控制遍历这么多节点数，就能保证这次遍历的都是当前层的节点。
+
+
 
 ## 1. 一棵树每层节点的平均数
 

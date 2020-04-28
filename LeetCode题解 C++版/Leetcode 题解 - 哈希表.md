@@ -13,6 +13,7 @@
 [Leetcode](https://leetcode.com/problems/encode-and-decode-tinyurl/description/)，利用 unordered_map 就可以存储精简后的 url 到原始 url 的映射，使得不仅可以显示简化的 url，也可以根据简化的 url 得到原始 url 从而定位到正确的资源) / [力扣](https://leetcode-cn.com/problems/encode-and-decode-tinyurl/description/)，利用 HashMap 就可以存储精简后的 url 到原始 url 的映射，使得不仅可以显示简化的 url，也可以根据简化的 url 得到原始 url 从而定位到正确的资源)
 
 
+
 # 1. 数组中两个数的和为给定值
 
 1\. Two Sum / 两数之和 (Easy)
@@ -82,6 +83,8 @@ public boolean containsDuplicate(int[] nums) {
 }
 ```
 
+
+
 # 3. 最长和谐序列
 
 594\. Longest Harmonious Subsequence (Easy)
@@ -111,6 +114,8 @@ public int findLHS(int[] nums) {
     return longest;
 }
 ```
+
+
 
 # 4. 最长连续序列
 
@@ -160,8 +165,3 @@ private int maxCount(Map<Integer, Integer> countForNum) {
 ```
 
 
-
-
-
-
-<div align="center"><img width="320px" src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/githubio/公众号二维码-2.png"></img></div>
