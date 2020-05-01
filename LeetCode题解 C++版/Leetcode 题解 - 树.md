@@ -669,24 +669,54 @@ public:
 There are two left leaves in the binary tree, with values 9 and 15 respectively. Return 24.
 ```
 
-```C++
-public int sumOfLeftLeaves(TreeNode root) {
-    if (root == null) return 0;
-    if (isLeaf(root.left)) return root.left.val + sumOfLeftLeaves(root.right);
-    return sumOfLeftLeaves(root.left) + sumOfLeftLeaves(root.right);
-}
+**题解**：`if(!root->left && !root->right)`可以判断当前节点是否为叶子节点，但要判断某一节点是否是左子节点只能从其双亲节点入手，**当前双亲节点的左子节点存在且左子节点的左子节点及右子节点均不存在，则当前双亲节点的左子节点为叶子节点**，即`(root->left && !root->left->left && !root->left->right)`。
 
-private boolean isLeaf(TreeNode node){
-    if (node == null) return false;
-    return node.left == null && node.right == null;
-}
+分三种情况递归计算个子树的左叶子和：
+
+- 当前节点为空时，左叶子和为0
+
+- 当前节点的左子节点为叶子节点时，当前节点所在子树的左叶子和为左叶子的值加上右子树的左叶子和，即`root->left->val + sumOfLeftLeaves(root->right)`
+- 当前节点左子节点不为叶子节点时，当前节点所在子树的左叶子和为左子树的左叶子和加上右子树的左叶子和，即`sumOfLeftLeaves(root->left) + sumOfLeftLeaves(root->right)`
+
+紧凑写法：
+
+```C++
+class Solution {
+public:
+    int sumOfLeftLeaves(TreeNode* root) {
+        if(!root) return 0;
+        if(root->left && !root->left->left && !root->left->right) // 判断是否是左叶子节点
+            return root->left->val + sumOfLeftLeaves(root->right);
+        return sumOfLeftLeaves(root->left) + sumOfLeftLeaves(root->right);
+    }
+};
+```
+
+容易理解的写法：
+
+```C++
+class Solution {
+public:
+    int sumOfLeftLeaves(TreeNode* root) {
+        if(!root) return 0;
+
+        int sum = 0;
+        if (root->left && !root->left->left && !root->left->right) // 判断是否是左叶子节点
+            sum += root->left->val;
+        else
+            sum += sumOfLeftLeaves(root->left);
+
+        sum += sumOfLeftLeaves(root->right);
+        return sum;
+    }
+};
 ```
 
 
 
-## 12. 相同节点值的最大路径长度
+## 12. 相同节点值的最大路径长度（较难）
 
-687\. Longest Univalue Path (Easy)
+687\. Longest Univalue Path / 最长相同值路径 (Easy)
 
 [Leetcode](https://leetcode.com/problems/longest-univalue-path/) / [力扣](https://leetcode-cn.com/problems/longest-univalue-path/)
 
@@ -700,30 +730,73 @@ private boolean isLeaf(TreeNode node){
 Output : 2
 ```
 
+[**题解**](https://www.cnblogs.com/grandyang/p/7636259.html)：首先对其左右子结点调用递归函数，得到其左右子树的最大相同值路径长度，下面就要来看当前结点和其左右子结点之间的关系了，如果其左子结点存在且和当前节点值相同，则left自增1，否则left重置0；同理，如果其右子结点存在且和当前节点值相同，则right自增1，否则right重置0。然后用left+right来更新结果res。而调用当前节点值的函数只能返回left和right中的较大值，因为如果还要跟父节点组path，就只能在左右子节点中选一条path，当然选值大的那个了。
+
+紧凑写法：
+
 ```C++
-private int path = 0;
+class Solution {
+public:
+    int res = 0;
+    int longestUnivaluePath(TreeNode* root) {
+        if(!root) return 0;
+        dfs(root);
+        return res;
+    }
 
-public int longestUnivaluePath(TreeNode root) {
-    dfs(root);
-    return path;
-}
+    int dfs(TreeNode* root) {
+        if(!root) return 0;
 
-private int dfs(TreeNode root){
-    if (root == null) return 0;
-    int left = dfs(root.left);
-    int right = dfs(root.right);
-    int leftPath = root.left != null && root.left.val == root.val ? left + 1 : 0;
-    int rightPath = root.right != null && root.right.val == root.val ? right + 1 : 0;
-    path = Math.max(path, leftPath + rightPath);
-    return Math.max(leftPath, rightPath);
-}
+        int left = dfs(root->left);
+        int right = dfs(root->right);
+
+        left = root->left && root->left->val == root->val ? left + 1 : 0;
+        right = root->right && root->right->val == root->val ? right + 1 : 0;
+
+        res = max(res, left + right);
+        return max(left, right);
+    }
+};
+```
+
+清晰写法：
+
+```C++
+class Solution {
+public:
+    int res = 0;
+    int longestUnivaluePath(TreeNode* root) {
+        if(!root) return 0;
+        dfs(root);
+        return res;
+    }
+
+    int dfs(TreeNode* root) {
+        if(!root) return 0;
+
+        int left = dfs(root->left);
+        int right = dfs(root->right);
+
+        int leftLen = 0, rightLen = 0;
+        if(root->left && root->left->val == root->val) { // 与左子节点值相等
+            leftLen = left + 1;
+        }
+            
+        if(root->right && root->right->val == root->val) { // 与右子节点值相等
+            rightLen = right + 1;
+        }
+
+        res = max(res, leftLen + rightLen);
+        return max(leftLen, rightLen);
+    }
+};
 ```
 
 
 
 ## 13. 间隔遍历
 
-337\. House Robber III (Medium)
+337\. House Robber III / 打家劫舍III (Medium)
 
 [Leetcode](https://leetcode.com/problems/house-robber-iii/description/) / [力扣](https://leetcode-cn.com/problems/house-robber-iii/description/)
 
@@ -736,22 +809,51 @@ private int dfs(TreeNode root){
 Maximum amount of money the thief can rob = 3 + 3 + 1 = 7.
 ```
 
+**题解**：
+
+1、超时解法：
+
+爷爷节点获取到最大的偷取的钱数：
+
+- 首先要明确相邻的节点不能偷，也就是爷爷选择偷，儿子就不能偷了，但是孙子可以偷
+- 二叉树只有左右两个孩子，一个爷爷最多 2 个儿子，4 个孙子
+
+根据以上条件，我们可以得出单个节点的钱该怎么算：
+4 个孙子偷的钱 + 爷爷的钱 VS 两个儿子偷的钱 哪个组合钱多，就当做当前节点能偷的最大钱数。这就是动态规划里面的最优子结构
+
+由于是二叉树，这里可以选择计算所有子节点
+
+4 个孙子偷的钱加上爷爷的钱如下：
+`int method1 = root.val + rob(root->left->left) + rob(root->left->right) + rob(root->right->left) + rob(root->right->right);`
+两个儿子偷的钱如下
+`int method2 = rob(root->left) + rob(root->right);`
+挑选一个钱数多的方案则
+`int result = max(method1, method2);`
+
 ```C++
-public int rob(TreeNode root) {
-    if (root == null) return 0;
-    int val1 = root.val;
-    if (root.left != null) val1 += rob(root.left.left) + rob(root.left.right);
-    if (root.right != null) val1 += rob(root.right.left) + rob(root.right.right);
-    int val2 = rob(root.left) + rob(root.right);
-    return Math.max(val1, val2);
-}
+class Solution {
+public:
+    int rob(TreeNode* root) {
+        if(!root) return 0;
+        int val = root->val;
+        if(root->left) val += (rob(root->left->left) + rob(root->left->right));
+        if(root->right) val += (rob(root->right->left) + rob(root->right->right));
+        return max(val, rob(root->left) + rob(root->right));
+    }
+};
+```
+
+2、结合动态规划：
+
+```C++
+
 ```
 
 
 
 ## 14. 找出二叉树中第二小的节点
 
-671\. Second Minimum Node In a Binary Tree (Easy)
+671\. Second Minimum Node In a Binary Tree / 二叉树中第二小的节点 (Easy)
 
 [Leetcode](https://leetcode.com/problems/second-minimum-node-in-a-binary-tree/description/) / [力扣](https://leetcode-cn.com/problems/second-minimum-node-in-a-binary-tree/description/)
 

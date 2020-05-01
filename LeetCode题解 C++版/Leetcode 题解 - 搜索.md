@@ -2531,3 +2531,48 @@ int main () {
 
 
 
+### 4. 火柴拼正方形
+
+[Leetcode 473. 火柴拼正方形](https://leetcode-cn.com/problems/matchsticks-to-square/)
+
+**题解：**此题即判断一个数组能否分成四个相等的部分，可先创建包含四个元素的数组 sum[4] 存储各个边的和，可通过DFS枚举数组的各个位置，将当前位置的数字加到各个边的和上，枚举到最后一个元素时判断各部分和是否相等即可。为优化搜索，需要进行剪枝或优化：
+
+- 剪枝：当元素和超过目标值时直接跳过，不加入当前元素
+
+- 搜索顺序优化：先对数组从大到小排序，使大的元素先相加，这样便可以快速判断当前路径是否合法，从而避免进行冗余的搜索。
+
+```C++
+class Solution {
+public:
+    int sum = 0;
+    vector<int> edgSum;
+    bool makesquare(vector<int>& nums) {
+        if(nums.empty()) return false;
+        for(int num : nums)
+            sum += num;
+        if(sum % 4 != 0) return false;
+        sort(nums.rbegin(), nums.rend()); // 从大到小排序
+
+        edgSum = vector<int>(4, 0); // 各个边的和
+        return dfs(0, nums);
+    }
+
+    bool dfs(int u, vector<int>& nums) {
+        if(u == nums.size()) {
+            if(edgSum[0] == edgSum[1] && edgSum[1] == edgSum[2] && edgSum[2] == edgSum[3])
+                return true;
+            return false;
+        }
+        
+        for(int i = 0; i < 4; i++) {
+            if(edgSum[i] + nums[u] > sum / 4) continue; // 剪枝，加入此元素后当前边的和超过目标值
+
+            edgSum[i] += nums[u];
+            if(dfs(u + 1, nums)) return true; // 找到答案直接返回即可
+            edgSum[i] -= nums[u];
+        }
+        return false;
+    } 
+};
+```
+

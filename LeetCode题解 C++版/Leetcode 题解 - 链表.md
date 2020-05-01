@@ -16,7 +16,7 @@
 
 #  1. 找出两个链表的交点
 
-160\. Intersection of Two Linked Lists (Easy)
+160\. Intersection of Two Linked Lists / 相交链表 (Easy)
 
 [Leetcode](https://leetcode.com/problems/intersection-of-two-linked-lists/description/) / [力扣](https://leetcode-cn.com/problems/intersection-of-two-linked-lists/description/)
 
@@ -73,7 +73,7 @@ public:
 
 #  2. 链表反转
 
-206\. Reverse Linked List (Easy)
+206\. Reverse Linked List / 反转链表 (Easy)
 
 [Leetcode](https://leetcode.com/problems/reverse-linked-list/description/) / [力扣](https://leetcode-cn.com/problems/reverse-linked-list/description/)
 
@@ -136,25 +136,60 @@ public:
 
 
 
-#  3. 归并两个有序的链表
+#  3. 合并两个有序链表
 
-21\. Merge Two Sorted Lists (Easy)
+21\. Merge Two Sorted Lists / 合并两个有序链表 (Easy)
 
 [Leetcode](https://leetcode.com/problems/merge-two-sorted-lists/description/) / [力扣](https://leetcode-cn.com/problems/merge-two-sorted-lists/description/)
 
+**题解**：
+
+递归：
+
 ```C++
-public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
-    if (l1 == null) return l2;
-    if (l2 == null) return l1;
-    if (l1.val < l2.val) {
-        l1.next = mergeTwoLists(l1.next, l2);
-        return l1;
-    } else {
-        l2.next = mergeTwoLists(l1, l2.next);
-        return l2;
+class Solution {
+public:
+    ListNode* mergeTwoLists(ListNode* l1, ListNode* l2) {
+        if(!l1) return l2;
+        if(!l2) return l1;
+        if(l1->val <= l2->val) {
+            l1->next = mergeTwoLists(l1->next, l2);
+            return l1;
+        } else {
+            l2->next = mergeTwoLists(l1, l2->next);
+            return l2;
+        }
     }
-}
+};
 ```
+
+迭代：
+
+```C++
+class Solution {
+public:
+    ListNode* mergeTwoLists(ListNode* l1, ListNode* l2) {
+        ListNode* head = new ListNode(-1);
+
+        ListNode* cur = head;
+        while(l1 && l2) {
+            if(l1->val <= l2->val) {
+                cur->next = l1;
+                l1 = l1->next;
+            } else {
+                cur->next = l2;
+                l2 = l2->next;
+            }
+            cur = cur->next;
+        }
+
+        cur->next = !l1 ? l2 : l1; // 处理未遍历完的节点
+        return head->next;
+    }
+};
+```
+
+
 
 #  4. 从有序链表中删除重复节点
 
@@ -174,6 +209,8 @@ public ListNode deleteDuplicates(ListNode head) {
     return head.val == head.next.val ? head.next : head;
 }
 ```
+
+
 
 #  5. 删除链表的倒数第 n 个节点
 
@@ -202,6 +239,8 @@ public ListNode removeNthFromEnd(ListNode head, int n) {
     return head;
 }
 ```
+
+
 
 #  6. 交换链表中的相邻结点
 
@@ -232,6 +271,8 @@ public ListNode swapPairs(ListNode head) {
     return node.next;
 }
 ```
+
+
 
 #  7. 链表求和
 
@@ -273,6 +314,8 @@ private Stack<Integer> buildStack(ListNode l) {
     return stack;
 }
 ```
+
+
 
 #  8. 回文链表
 
@@ -325,6 +368,8 @@ private boolean isEqual(ListNode l1, ListNode l2) {
 }
 ```
 
+
+
 #  9. 分隔链表
 
 725\. Split Linked List in Parts(Medium)
@@ -367,6 +412,8 @@ public ListNode[] splitListToParts(ListNode root, int k) {
 }
 ```
 
+
+
 #  10. 链表元素按奇偶聚集
 
 328\. Odd Even Linked List (Medium)
@@ -395,10 +442,3 @@ public ListNode oddEvenList(ListNode head) {
     return head;
 }
 ```
-
-
-
-
-
-
-<div align="center"><img width="320px" src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/githubio/公众号二维码-2.png"></img></div>
