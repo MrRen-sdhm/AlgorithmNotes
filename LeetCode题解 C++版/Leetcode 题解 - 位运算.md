@@ -1,4 +1,3 @@
-<!-- GFM-TOC -->
 * [0. 原理](#0-原理)
 * [1. 统计两个数的二进制表示有多少位不同](#1-统计两个数的二进制表示有多少位不同)
 * [2. 数组中唯一一个不重复的元素](#2-数组中唯一一个不重复的元素)
@@ -13,7 +12,7 @@
 * [11. 实现整数的加法](#11-实现整数的加法)
 * [12. 字符串数组最大乘积](#12-字符串数组最大乘积)
 * [13. 统计从 0 \~ n 每个数的二进制表示中 1 的个数](#13-统计从-0-\~-n-每个数的二进制表示中-1-的个数)
-<!-- GFM-TOC -->
+
 
 
 # 0. 原理
@@ -118,7 +117,9 @@ static int Integer.highestOneBit();      // 获得最高位
 static String toBinaryString(int i);     // 转换为二进制表示的字符串
 ```
 
-# 1. 统计两个数的二进制表示有多少位不同
+
+
+# 1. 两个数的二进制表示有多少位不同
 
 461. Hamming Distance (Easy)
 
@@ -173,7 +174,9 @@ public int hammingDistance(int x, int y) {
 }
 ```
 
-# 2. 数组中唯一一个不重复的元素
+
+
+# 2. 数组中唯一不重复的元素
 
 136\. Single Number (Easy)
 
@@ -193,6 +196,8 @@ public int singleNumber(int[] nums) {
     return ret;
 }
 ```
+
+
 
 # 3. 找出数组中缺失的那个数
 
@@ -216,6 +221,8 @@ public int missingNumber(int[] nums) {
     return ret ^ nums.length;
 }
 ```
+
+
 
 # 4. 数组中不重复的两个元素
 
@@ -242,6 +249,8 @@ public int[] singleNumber(int[] nums) {
     return ret;
 }
 ```
+
+
 
 # 5. 翻转一个数的比特位
 
@@ -290,6 +299,8 @@ private int reverseByte(byte b) {
 }
 ```
 
+
+
 # 6. 不用额外变量交换两个整数
 
 [程序员代码面试指南 ：P317](#)
@@ -299,6 +310,8 @@ a = a ^ b;
 b = a ^ b;
 a = a ^ b;
 ```
+
+
 
 # 7. 判断一个数是不是 2 的 n 次方
 
@@ -322,6 +335,8 @@ public boolean isPowerOfTwo(int n) {
 }
 ```
 
+
+
 # 8.  判断一个数是不是 4 的 n 次方
 
 342\. Power of Four (Easy)
@@ -344,7 +359,9 @@ public boolean isPowerOfFour(int num) {
 }
 ```
 
-# 9. 判断一个数的位级表示是否不会出现连续的 0 和 1
+
+
+# 9. 位级表示是否不会出现连续的 0 和 1
 
 693\. Binary Number with Alternating Bits (Easy)
 
@@ -370,6 +387,8 @@ public boolean hasAlternatingBits(int n) {
     return (a & (a + 1)) == 0;
 }
 ```
+
+
 
 # 10. 求一个数的补码
 
@@ -428,6 +447,8 @@ public int findComplement(int num) {
 }
 ```
 
+
+
 # 11. 实现整数的加法
 
 371\. Sum of Two Integers (Easy)
@@ -443,6 +464,8 @@ public int getSum(int a, int b) {
     return b == 0 ? a : getSum((a ^ b), (a & b) << 1);
 }
 ```
+
+
 
 # 12. 字符串数组最大乘积
 
@@ -481,7 +504,9 @@ public int maxProduct(String[] words) {
 }
 ```
 
-# 13. 统计从 0 \~ n 每个数的二进制表示中 1 的个数
+
+
+# 13. 统计二进制表示中 1 的个数
 
 338\. Counting Bits (Medium)
 

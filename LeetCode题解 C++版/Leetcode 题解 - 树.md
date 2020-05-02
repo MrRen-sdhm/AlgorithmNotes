@@ -1319,6 +1319,8 @@ public TreeNode trimBST(TreeNode root, int L, int R) {
 }
 ```
 
+
+
 ## 2. 寻找二叉查找树的第 k 个元素
 
 230\. Kth Smallest Element in a BST (Medium)
@@ -1329,41 +1331,25 @@ public TreeNode trimBST(TreeNode root, int L, int R) {
 中序遍历解法：
 
 ```C++
-private int cnt = 0;
-private int val;
-
-public int kthSmallest(TreeNode root, int k) {
-    inOrder(root, k);
-    return val;
-}
-
-private void inOrder(TreeNode node, int k) {
-    if (node == null) return;
-    inOrder(node.left, k);
-    cnt++;
-    if (cnt == k) {
-        val = node.val;
-        return;
+class Solution {
+public:
+    vector<int> vec;
+    int kthSmallest(TreeNode* root, int k) {
+        if(!root) return 0;
+        inOrder(root);
+        return vec[k - 1];
     }
-    inOrder(node.right, k);
+
+    void inOrder(TreeNode* root) {
+        if(!root) return;
+        inOrder(root->left);
+        vec.push_back(root->val);
+        inOrder(root->right);
+    }
 }
 ```
 
-递归解法：
 
-```C++
-public int kthSmallest(TreeNode root, int k) {
-    int leftCnt = count(root.left);
-    if (leftCnt == k - 1) return root.val;
-    if (leftCnt > k - 1) return kthSmallest(root.left, k);
-    return kthSmallest(root.right, k - leftCnt - 1);
-}
-
-private int count(TreeNode node) {
-    if (node == null) return 0;
-    return 1 + count(node.left) + count(node.right);
-}
-```
 
 ## 3. 把二叉查找树每个节点的值都加上比它大的节点的值
 
