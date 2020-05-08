@@ -1,10 +1,3 @@
-* [1. 求开方](#1-求开方)
-* [2. 大于给定元素的最小元素](#2-大于给定元素的最小元素)
-* [3. 有序数组的 Single Element](#3-有序数组的-single-element)
-* [4. 第一个错误的版本](#4-第一个错误的版本)
-* [5. 旋转数组的最小数字](#5-旋转数组的最小数字)
-* [6. 查找区间](#6-查找区间)
-
 # 二分查找模板
 
 ## 模板1：整数二分模板
@@ -374,7 +367,7 @@ public:
 
 # 二分查找变形
 
-## 1. 有序数组中的单一元素✏️
+## 1. 有序数组中只出现一次的数字✏️
 
 540\. Single Element in a Sorted Array / 有序数组中的单一元素 (Medium)
 
@@ -387,37 +380,71 @@ Output: 2
 
 题目描述：一个有序数组只有一个数不出现两次，找出这个数。
 
+**题解**：
+
+此题与 [Leetcode 136. 只出现一次的数字](https://leetcode-cn.com/problems/single-number/) 类似（题解见数组与矩阵部分），但此题已排序，并且限制不同。
+
 要求以 O(logN) 时间复杂度进行求解，因此不能遍历数组并进行异或操作来求解，这么做的时间复杂度为 O(N)。
+
+
+
+方法1：
 
 令 index 为 Single Element 在数组中的位置。在 index 之后，数组中原来存在的成对状态被改变。如果 m 为偶数，并且 m + 1 < index，那么 nums[m] == nums[m + 1]；m + 1 >= index，那么 nums[m] != nums[m + 1]。
 
 从上面的规律可以知道，如果 nums[m] == nums[m + 1]，那么 index 所在的数组位置为 [m + 2, h]，此时令 l = m + 2；如果 nums[m] != nums[m + 1]，那么 index 所在的数组位置为 [l, m]，此时令 h = m。
 
-因为 h 的赋值表达式为 h = m，那么循环条件也就只能使用 l < h 这种形式。
+**核心**：保证查找区间中元素个数为奇数，这样限制后，若nums[mid] != nums[mid + 1]那么落单数一定在左侧否则一定在右侧。
 
 ```C++
-public int singleNonDuplicate(int[] nums) {
-    int l = 0, h = nums.length - 1;
-    while (l < h) {
-        int m = l + (h - l) / 2;
-        if (m % 2 == 1) {
-            m--;   // 保证 l/h/m 都在偶数位，使得查找区间大小一直都是奇数
+class Solution {
+public:
+    int singleNonDuplicate(vector<int>& nums) {
+        int n = nums.size();
+        int l = 0, r = n - 1;
+        while(l < r) {
+            int mid = l + r >> 1;
+            if (mid % 2 == 1) --mid; // 保证 l/r/m 都在偶数位，使得查找区间大小一直都是奇数
+            if(nums[mid] != nums[mid + 1]) r = mid;
+            else l = mid + 2;
         }
-        if (nums[m] == nums[m + 1]) {
-            l = m + 2;
-        } else {
-            h = m;
-        }
+        return nums[l];
     }
-    return nums[l];
-}
+};
+```
+
+
+
+方法2：
+
+**技巧：异或1运算可以将坐标两两归为一对，比如0和1，2和3，4和5等等**。异或1可以直接找到一对中的另一个数字，比如对于2，亦或1就是3，对于3，亦或1就是2。如果你和你的小伙伴相等了，说明落单数在右边，如果不等，说明在左边。
+
+```C++
+class Solution {
+public:
+    int singleNonDuplicate(vector<int>& nums) {
+        int n = nums.size();
+        int l = 0, r = n - 1;
+        while(l < r) {
+            int mid = l + r >> 1;
+            if(nums[mid] != nums[mid^1]) r = mid;
+            else l = mid + 1;
+        }
+        return nums[l];
+    }
+};
 ```
 
 
 
 ## 2. 寻找重复数
 
-[Leetcode 287. 寻找重复数](https://leetcode-cn.com/problems/find-the-duplicate-number/)
+[Leetcode 287. 寻找重复数 (Medium)](https://leetcode-cn.com/problems/find-the-duplicate-number/)
+
+```
+Input: [1,3,4,2,2]
+Output: 2
+```
 
 **题解**：
 

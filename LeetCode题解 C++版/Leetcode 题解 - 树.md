@@ -1,42 +1,3 @@
-* [递归](#递归)
-    * [1. 树的高度](#1-树的高度)
-    * [2. 平衡树](#2-平衡树)
-    * [3. 两节点的最长路径](#3-两节点的最长路径)
-    * [4. 翻转树](#4-翻转树)
-    * [5. 归并两棵树](#5-归并两棵树)
-    * [6. 判断路径和是否等于一个数](#6-判断路径和是否等于一个数)
-    * [7. 统计路径和等于一个数的路径数量](#7-统计路径和等于一个数的路径数量)
-    * [8. 子树](#8-子树)
-    * [9. 树的对称](#9-树的对称)
-    * [10. 最小路径](#10-最小路径)
-    * [11. 统计左叶子节点的和](#11-统计左叶子节点的和)
-    * [12. 相同节点值的最大路径长度](#12-相同节点值的最大路径长度)
-    * [13. 间隔遍历](#13-间隔遍历)
-    * [14. 找出二叉树中第二小的节点](#14-找出二叉树中第二小的节点)
-* [层次遍历](#层次遍历)
-    * [1. 一棵树每层节点的平均数](#1-一棵树每层节点的平均数)
-    * [2. 得到左下角的节点](#2-得到左下角的节点)
-* [前中后序遍历](#前中后序遍历)
-    * [1. 非递归实现二叉树的前序遍历](#1-非递归实现二叉树的前序遍历)
-    * [2. 非递归实现二叉树的后序遍历](#2-非递归实现二叉树的后序遍历)
-    * [3. 非递归实现二叉树的中序遍历](#3-非递归实现二叉树的中序遍历)
-* [BST](#bst)
-    * [1. 修剪二叉查找树](#1-修剪二叉查找树)
-    * [2. 寻找二叉查找树的第 k 个元素](#2-寻找二叉查找树的第-k-个元素)
-    * [3. 把二叉查找树每个节点的值都加上比它大的节点的值](#3-把二叉查找树每个节点的值都加上比它大的节点的值)
-    * [4. 二叉查找树的最近公共祖先](#4-二叉查找树的最近公共祖先)
-    * [5. 二叉树的最近公共祖先](#5-二叉树的最近公共祖先)
-    * [6. 从有序数组中构造二叉查找树](#6-从有序数组中构造二叉查找树)
-    * [7. 根据有序链表构造平衡的二叉查找树](#7-根据有序链表构造平衡的二叉查找树)
-    * [8. 在二叉查找树中寻找两个节点，使它们的和为一个给定值](#8-在二叉查找树中寻找两个节点，使它们的和为一个给定值)
-    * [9. 在二叉查找树中查找两个节点之差的最小绝对值](#9-在二叉查找树中查找两个节点之差的最小绝对值)
-    * [10. 寻找二叉查找树中出现次数最多的值](#10-寻找二叉查找树中出现次数最多的值)
-* [Trie](#trie)
-    * [1. 实现一个 Trie](#1-实现一个-trie)
-    * [2. 实现一个 Trie，用来求前缀和](#2-实现一个-trie，用来求前缀和)
-
-
-
 # 递归
 
 一棵树要么是空树，要么有两个指针，每个指针指向一棵树。树是一种递归结构，很多树的问题可以使用递归来处理。
@@ -51,7 +12,7 @@
 
 
 
-## 1. 最大深度
+## 1. 最大深度⭐️
 
 104\. Maximum Depth of Binary Tree / 二叉树的最大深度 (Easy)
 
@@ -892,7 +853,41 @@ public int findSecondMinimumValue(TreeNode root) {
 
 
 
-## 1. 一棵树每层节点的平均数
+## 1. 二叉树的层序遍历
+
+[102. 二叉树的层序遍历 (Medium)](https://leetcode-cn.com/problems/binary-tree-level-order-traversal/)
+
+**题解**：使用队列
+
+```C++
+class Solution {
+public:
+    vector<vector<int>> levelOrder(TreeNode* root) {
+        vector<vector<int>> res;
+        if(!root) return res;
+
+        queue<TreeNode*> qu;
+        qu.push(root);
+
+        while(!qu.empty()) {
+            int cnt = qu.size();
+            vector<int> vec;
+            while(cnt--) {
+                auto t = qu.front(); qu.pop();
+                vec.push_back(t->val);
+                if(t->left) qu.push(t->left);
+                if(t->right) qu.push(t->right);
+            }
+            if(!vec.empty()) res.push_back(vec);
+        }
+        return res;
+    }
+};
+```
+
+
+
+## 2. 一棵树每层节点的平均数
 
 637\. Average of Levels in Binary Tree (Easy)
 
@@ -926,7 +921,7 @@ public:
 
 
 
-## 2. 得到左下角的节点
+## 3. 得到左下角的节点
 
 513\. Find Bottom Left Tree Value (Easy)
 
@@ -1445,24 +1440,33 @@ public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
 
 ## 6. 从有序数组中构造二叉查找树
 
-108\. Convert Sorted Array to Binary Search Tree (Easy)
+108\. Convert Sorted Array to Binary Search Tree / 将有序数组转换为二叉搜索树 (Easy)
 
 [Leetcode](https://leetcode.com/problems/convert-sorted-array-to-binary-search-tree/description/) / [力扣](https://leetcode-cn.com/problems/convert-sorted-array-to-binary-search-tree/description/)
 
-```C++
-public TreeNode sortedArrayToBST(int[] nums) {
-    return toBST(nums, 0, nums.length - 1);
-}
+**题解**：
 
-private TreeNode toBST(int[] nums, int sIdx, int eIdx){
-    if (sIdx > eIdx) return null;
-    int mIdx = (sIdx + eIdx) / 2;
-    TreeNode root = new TreeNode(nums[mIdx]);
-    root.left =  toBST(nums, sIdx, mIdx - 1);
-    root.right = toBST(nums, mIdx + 1, eIdx);
-    return root;
-}
+二叉搜索树，是一种始终满足左<根<右的特性，如果将**二叉搜索树按中序遍历的话，得到的就是一个有序数组**。那么反过来，我们可以得知，**根节点应该是有序数组的中间点**，从中间点分开为左右两个有序数组，在分别找出其中间点作为原中间点的左右两个子节点，这不就是二分查找么。
+
+```C++
+class Solution {
+public:
+    TreeNode* sortedArrayToBST(vector<int>& nums) {
+        return toBST(nums, 0, nums.size() - 1);
+    }
+
+    TreeNode* toBST(vector<int>& nums, int l, int r) {
+        if(l > r) return NULL;
+        int mid = (l + r) >> 1;
+        TreeNode *root = new TreeNode(nums[mid]);
+        root->left = toBST(nums, l, mid - 1);
+        root->right = toBST(nums, mid + 1, r);
+        return root;
+    }
+};
 ```
+
+
 
 ## 7. 根据有序链表构造平衡的二叉查找树
 

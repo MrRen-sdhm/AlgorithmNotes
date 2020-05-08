@@ -330,65 +330,37 @@ public:
 
 **题解**：
 
-解法一：快速排序的 partition() 方法，会返回一个整数 j 使得 a[l..j-1] 小于等于 a[j]，且 a[j+1..h] 大于等于 a[j]，此时 a[j] 就是数组的第 j 大元素。可以利用这个特性找出数组的第 K 个元素，这种找第 K 个元素的算法称为快速选择算法。复杂度：O(N) + O(1)，只有当允许修改数组元素时才可以使用。[partition算法相关资料](https://selfboot.cn/2016/09/01/lost_partition/)
+解法一：快速选择，时间复杂度O(n)，空间复杂度O(1)
+
+使用partition将数组划分为<=pivot和>=pivot两个部分，若pivot所处位置之前有k个数则舍弃后面的数，若pivot所处位置之前不到k个数则舍弃前面的数。模板中while循环后，j 即为pivot所在位置，注意此 j 是**相对整个数组**而不是相对某个区间，因而包括pivot在内的左侧部分元素为[0, j]，长度为 j+1，若k<=j+1则第k个数在[l, j]区间内，否则在[j + 1, r]区间内
+
+经过快速选择后，原数组中第k个数即为所求，其下标为[k - 1]
 
 ```C++
-class Solution {
-public:
-    vector<int> GetLeastNumbers_Solution(vector<int> input, int k) {
+vector<int> GetLeastNumbers_Solution(vector<int> input, int k) {
         vector<int> res;
         if(input.size() == 0 || k > int(input.size()) || k <= 0)
             return res;
         
-        int start = 0;
-        int end = input.size() - 1;
-        int index = partition(input, start, end);
-        while(index != k -1) { // 枢轴未分出最小的k个数
-            if(index > k - 1) { // 枢轴左侧数量大于k，分左侧
-                end = index - 1;
-                index = partition(input, start, end);
-            } else {
-                start = index + 1; // 枢轴最侧数量小于k，分右侧
-                index = partition(input, start, end);
-            }
+        for(int i = 1; i <= k; i++) {
+            quick_select(input, 0, input.size() - 1, i);
+            res.push_back(input[i - 1]); // 第k小的元素在原数组中的小标为k-1
         }
-        
-        for(int i = 0; i < k; ++i) { // 获取前k个数字
-            res.push_back(input[i]);
-        }
-        
         return res;
     }
     
-    int partition(vector<int> &arr, int low, int high) {
-        int pivot = arr[low]; // 第一个元素作为枢轴
-        while (low < high) { // 两指针相交，结束
-            while (low < high && arr[high] >= pivot) high--;//先从后向前找比枢轴小的元素
-            arr[low] = arr[high]; // 用high的元素替换low的元素，即将小的元素放到开头
-            while (low < high && arr[low] <= pivot) low++; // 再从前向后找比枢轴大的元素
-            arr[high] = arr[low]; // 用low的元素替换high的元素，即将大的元素放到末尾
+    void quick_select(vector<int>& q,int l,int r,int k)
+    {
+        if(l >= r) return;
+        int x = q[l + r >> 1], i = l - 1, j = r + 1;
+        while(i < j) {
+            while(q[++i] < x);
+            while(q[--j] > x);
+            if(i < j) swap(q[i], q[j]);
         }
-
-        arr[low] = pivot; // 枢轴元素放到最终位置
-        return low; // 返回存放枢轴的最终位置
-    }
-    
-    int partitionv2(vector<int> &arr, int low, int high) {
-        int less = low - 1;
-        int more = high;
-        int curr = low;
-        
-        while(curr < more) {
-            if(arr[curr] < arr[high]) {
-                swap(arr[++less], arr[curr++]);
-            } else if(arr[curr] > arr[high]) {
-                swap(arr[--more], arr[curr]);
-            } else curr++;
-        }
-        
-        swap(arr[high], arr[more]);
-        
-        return more;
+        // 0~j有j+1个数，因而k与j+1进行比较
+        if(k <= j + 1) quick_select(q, l, j, k); // 第k个数在左侧
+        else quick_select(q, j + 1, r, k); // 第k个数在右侧
     }
 };
 ```
@@ -524,68 +496,13 @@ public:
 
 【[OJ](https://www.nowcoder.com/practice/96bd6684e04a44eb80e6a68efc0ec6c5?tpId=13&tqId=11188&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking)】在数组中的两个数字，如果前面一个数字大于后面的数字，则这两个数字组成一个逆序对。输入一个数组,求出这个数组中的逆序对的总数P。并将P对1000000007取模的结果输出。 即输出P%1000000007
 
-**题解**：归并排序的过程中查找逆序对，时间复杂度O(nlogn)，空间复杂度O(n)
+**题解**：
 
-<img src="https://images2017.cnblogs.com/blog/849589/201710/849589-20171015230557043-37375010.gif" alt="img" style="zoom:67%;" />
+方法1：暴力求解，时间复杂度O(n^2)，空间复杂度O(1)
 
 ```C++
 class Solution {
 public:
-    int res = 0;
-    int InversePairs(vector<int> &data) {
-        if(data.size() < 2)
-            return 0 ;
-
-        MergeSort(data, 0, data.size() - 1);
-
-        return res;
-    }
-    
-    void MergeSort(vector<int> &arr, int low, int high) {
-        if (low == high) { // low == high为递归边界
-            return;
-        }
-
-        // 从中间划分两个子序列
-        // int mid = (low + high) / 2;
-        int mid = low + ((high - low) >> 1); // 可避免越界，并使用位运算加速
-        MergeSort(arr, low, mid);
-        MergeSort(arr, mid + 1, high);
-        Merge(arr, low, mid, high);
-    }
-    
-    void Merge(vector<int> &arr, int low, int mid, int high) {
-        vector<int> help(high - low + 1); // 辅助数组
-        int i = 0;
-        int p1 = low;
-        int p2 = mid + 1;
-
-        // arr[low]~arr[mid]和arr[mid+1]~arr[high]各自有序
-        // 比较左右两段中的元素，较小的复制到辅助数组中
-        while (p1 <= mid && p2 <= high) {
-            if(arr[p1] > arr[p2]) { // 若左侧序列有一数比右侧某数大，则左侧序列中此数右侧的数均比右侧某数大
-                res = (res + (mid - p1 + 1)) % 1000000007;
-            }
-
-            help[i++] = arr[p1] < arr[p2] ? arr[p1++] : arr[p2++];
-        }
-
-        // 如果一段没有检测完，则直接将剩下的部分复制过来
-        while (p1 <= mid) { // p1未越界，即p2越界
-            help[i++] = arr[p1++];
-        }
-        while (p2 <= high) { // p2未越界，即p1越界
-            help[i++] = arr[p2++];
-        }
-
-        // 将排序后的数据拷贝回原数组
-        for (i = 0; i < (high - low + 1); i++) {
-            arr[low + i] = help[i];
-        }
-    }
-
-
-    // 暴力求解，时间复杂度O(n^2)，空间复杂度O(1)
     int InversePairs_(vector<int> data) {
         int res = 0;
         if(data.empty()) return res;
@@ -596,8 +513,45 @@ public:
                     res++;
             }
         }
-        
         return res;
+    }
+};
+```
+
+方法2：归并排序的过程中查找逆序对，时间复杂度O(nlogn)，空间复杂度O(n)。合并的过程中，左侧区间和右侧区间中所有元素分别都是排序好的。若左侧某元素比右侧元素大，则此元素后面的所有元素都比右侧元素大。因为右侧的当前元素会移入辅助数组（右指针右移），因而需要一次性将左侧比此元素大的数字个数加上。
+
+<img src="https://images2017.cnblogs.com/blog/849589/201710/849589-20171015230557043-37375010.gif" alt="img" style="zoom:67%;" />
+
+```C++
+class Solution {
+public:
+    int res = 0;
+    int InversePairs(vector<int> &data) {
+        if(data.size() < 2)
+            return 0 ;
+        MergeSort(data, 0, data.size() - 1);
+        return res;
+    }
+    
+    void MergeSort(vector<int> &arr, int l, int r) {
+        if(l >= r) return;
+        
+        int tmp[arr.size()];
+        int mid = l + r >> 1;
+        MergeSort(arr, l, mid);  MergeSort(arr, mid + 1, r);
+        
+        int k = 0, i = l, j = mid + 1;
+        while(i <= mid && j <= r) {
+            if(arr[i] <= arr[j]) tmp[k++] = arr[i++];
+            else if(arr[i] > arr[j]) {
+                tmp[k++] = arr[j++];
+                res = (res + (mid - i + 1)) % 1000000007; // 计算逆序对数量
+            }
+        }
+        while(i <= mid) tmp[k++] = arr[i++];
+        while(j <= r) tmp[k++] = arr[j++];
+        
+        for(int i = l, j = 0; i <= r; i++, j++) arr[i] = tmp[j];
     }
 };
 ```

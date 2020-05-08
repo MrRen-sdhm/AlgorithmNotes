@@ -1,4 +1,3 @@
-<!-- GFM-TOC -->
 * [1. 把数组中的 0 移到末尾](#1-把数组中的-0-移到末尾)
 * [2. 改变矩阵维度](#2-改变矩阵维度)
 * [3. 找出数组中最长的连续 1](#3-找出数组中最长的连续-1)
@@ -11,7 +10,6 @@
 * [10. 对角元素相等的矩阵](#10-对角元素相等的矩阵)
 * [11. 嵌套数组](#11-嵌套数组)
 * [12. 分隔数组](#12-分隔数组)
-<!-- GFM-TOC -->
 
 
 # 1. 把数组中的 0 移到末尾
@@ -402,7 +400,7 @@ One of the longest S[K]:
 S[0] = {A[0], A[5], A[6], A[2]} = {5, 6, 2, 0}
 ```
 
-题目描述：S[i] 表示一个集合，集合的第一个元素是 A[i]，第二个元素是 A[A[i]]，如此嵌套下去。求最大的 S[i]。
+此题与 [Leetcode 136. 只出现一次的数字](https://leetcode-cn.com/problems/single-number/) 类似（题解见数组与矩阵部分），但此题已排序，并且限制不同。
 
 ```java
 public int arrayNesting(int[] nums) {
@@ -450,3 +448,152 @@ public int maxChunksToSorted(int[] arr) {
     return ret;
 }
 ```
+
+
+
+# 13. 除自身以外数组的乘积
+
+[Leetcode 238. 除自身以外数组的乘积 (Medium)](https://leetcode-cn.com/problems/product-of-array-except-self/)
+
+```
+输入: [1,2,3,4]
+输出: [24,12,8,6]
+```
+
+**题解**：
+
+方法1：
+
+使用两个数组分别存储左侧乘积与右侧乘积，左右乘积存储到结果数组。时间复杂度O(n)，空间复杂度O(n)。
+
+对于某一个数字，如果我们知道其前面所有数字的乘积，同时也知道后面所有的数乘积，那么二者相乘就是我们要的结果，所以我们只要分别创建出这两个数组即可，分别从数组的两个方向遍历就可以分别创建出乘积累积数组。
+
+```C++
+class Solution {
+public:
+    vector<int> productExceptSelf(vector<int>& nums) {
+        int n = nums.size();
+        vector<int> l(n), r(n), res(n);
+
+        l[0] = 1;
+        for(int i = 1; i < n; i++) // 计算左侧乘积数组
+            l[i] = nums[i - 1] * l[i - 1];
+
+        r[n - 1] = 1;
+        for(int i = n - 2; i >= 0; i--) // 计算右侧乘积数组
+            r[i] = nums[i + 1] * r[i + 1];
+
+        for(int i = 0; i < n; i++) // 计算其他元素乘积
+            res[i] = l[i] * r[i];
+
+        return res;
+    }
+};
+```
+
+
+
+方法2：
+
+空间优化，仅使用结果数组，先存储左侧元素乘积，再存储左右元素乘积，借助变量累乘获得左侧元素乘积和右侧元素乘积。时间复杂度O(n)，空间复杂度O(1)。
+
+由于最终的结果都是要乘到结果 res 中，所以可以不用单独的数组来保存乘积，而是直接累积到结果 res 中，我们先从前面遍历一遍，将乘积的累积存入结果 res 中，然后从后面开始遍历。用到一个临时变量 k，初始化为1，从左到右遍历是存储各位置左侧元素的乘积，并将这些左侧元素乘积存储在res中，从右向左遍历是存储各位置右侧元素的乘积，与res中对应位置元素相乘，即为左侧元素乘积乘以右侧元素乘积。
+
+```C++
+class Solution {
+public:
+    vector<int> productExceptSelf(vector<int>& nums) {
+        int n = nums.size();
+        vector<int> res(n);
+
+        int k = 1;
+        for(int i = 0; i < n; i++) { // 从左向右累乘，直接存到结果数组
+            res[i] = k; // k为该数左侧的乘积
+            k *= nums[i]; // 此时数组存储的是左侧元素的乘积
+        }
+
+        k = 1;
+        for(int i = n - 1; i >= 0; i--) { // 从右向左累乘，直接存到结果数组
+            res[i] *= k; // k为该数右侧的乘积
+            k *= nums[i]; // 此时数组等于左边的元素*右边的元素
+        }
+        return res;
+    }
+};
+```
+
+
+
+# 14. 数组中只出现一次的数字
+
+[Leetcode 136. 只出现一次的数字 (Easy)](https://leetcode-cn.com/problems/single-number/)
+
+**题解**：
+
+此题与 [Leetcode 540. 有序数组中的单一元素](https://leetcode-cn.com/problems/single-element-in-a-sorted-array/) 类似（题解见二分），但此题未排序，并且限制条件不同。
+
+
+
+方法1：使用哈希表，但空间复杂度可能大于O(1)
+
+遍历数组中的每个数字，若当前数字已经在 HashSet 中了，则将 HashSet 中的该数字移除，否则就加入HashSet。这相当于两两抵消了，最终凡是出现两次的数字都被移除了 HashSet，唯一剩下的那个就是单独数字了。
+
+```C++
+class Solution {
+public:
+    int singleNumber(vector<int>& nums) {
+        unordered_set<int> st;
+        for(auto num : nums)
+            if(st.count(num)) st.erase(num);
+            else st.insert(num);
+        
+        return *st.begin();
+    }
+};
+```
+
+
+
+方法2：排序后使用二分查找，时间复杂度O(nlogn + logn)
+
+```C++
+class Solution {
+public:
+    int singleNumber(vector<int>& nums) {
+        sort(nums.begin(), nums.end());
+        int l = 0, r = nums.size() - 1;
+        while(l < r) {
+            int mid = (l + r) / 2;
+            if(mid % 2 == 1) mid--; // 保证 l/r/m 都在偶数位，使得查找区间大小一直都是奇数
+            if(nums[mid] != nums[mid + 1]) r = mid;
+            else l = mid + 2;
+        }
+        // while(l < r) {
+        //     int mid = l + r >> 1;
+        //     if(nums[mid] != nums[mid^1]) r = mid;
+        //     else l = mid + 1;
+        // }
+        return nums[l];
+    }
+};
+```
+
+
+
+方法3：位运算，时间复杂度O(1)
+
+由于数字在计算机是以二进制存储的，每位上都是0或1，**如果我们把两个相同的数字异或，0与0 '异或' 是0，1与1 '异或' 也是0，那么我们会得到0**。根据这个特点，我们把数组中所有的数字都 '异或' 起来，则每对相同的数字都会得0，然后最后剩下来的数字就是那个只有1次的数字。
+
+```C++
+class Solution {
+public:
+    int singleNumber(vector<int>& nums) {
+        int res = 0;
+        for (auto num : nums) res ^= num;
+        return res;
+    }
+};
+```
+
+
+

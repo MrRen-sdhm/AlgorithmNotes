@@ -1,20 +1,3 @@
-* [0. 原理](#0-原理)
-* [1. 统计两个数的二进制表示有多少位不同](#1-统计两个数的二进制表示有多少位不同)
-* [2. 数组中唯一一个不重复的元素](#2-数组中唯一一个不重复的元素)
-* [3. 找出数组中缺失的那个数](#3-找出数组中缺失的那个数)
-* [4. 数组中不重复的两个元素](#4-数组中不重复的两个元素)
-* [5. 翻转一个数的比特位](#5-翻转一个数的比特位)
-* [6. 不用额外变量交换两个整数](#6-不用额外变量交换两个整数)
-* [7. 判断一个数是不是 2 的 n 次方](#7-判断一个数是不是-2-的-n-次方)
-* [8.  判断一个数是不是 4 的 n 次方](#8--判断一个数是不是-4-的-n-次方)
-* [9. 判断一个数的位级表示是否不会出现连续的 0 和 1](#9-判断一个数的位级表示是否不会出现连续的-0-和-1)
-* [10. 求一个数的补码](#10-求一个数的补码)
-* [11. 实现整数的加法](#11-实现整数的加法)
-* [12. 字符串数组最大乘积](#12-字符串数组最大乘积)
-* [13. 统计从 0 \~ n 每个数的二进制表示中 1 的个数](#13-统计从-0-\~-n-每个数的二进制表示中-1-的个数)
-
-
-
 # 0. 原理
 
 **基本原理** 
@@ -508,9 +491,51 @@ public int maxProduct(String[] words) {
 
 # 13. 统计二进制表示中 1 的个数
 
-338\. Counting Bits (Medium)
+[Leetcode 191. 位1的个数 (Easy)](https://leetcode-cn.com/problems/number-of-1-bits/)
+
+**题解**：n&-n能够得到n中的最后一位1，每次减去最后一位1，最终n减到0，减了多少次就有多少个1
+
+```C++
+class Solution {
+public:
+    int hammingWeight(uint32_t n) {
+        int res = 0;
+        while(n) {
+            n -= (n & -n);
+            res++;
+        }
+        return res;
+    }
+};
+```
+
+
+
+338\. Counting Bits / 比特位计数 (Medium)
 
 [Leetcode](https://leetcode.com/problems/counting-bits/description/) / [力扣](https://leetcode-cn.com/problems/counting-bits/description/)
+
+**题解**：
+
+方法1：基本做法
+
+```C++
+class Solution {
+public:
+    vector<int> countBits(int num) {
+        vector<int> res;
+        for(int i = 0; i <= num; i++) {
+            int sum = 0;
+            int num = i;
+            while(num) num -= (num & -num), sum++;
+            res.push_back(sum);
+        }
+        return res;
+    }
+};
+```
+
+方法2：动态规划
 
 对于数字 6(110)，它可以看成是 4(100) 再加一个 2(10)，因此 dp[i] = dp[i&(i-1)] + 1;
 
@@ -523,3 +548,6 @@ public int[] countBits(int num) {
     return ret;
 }
 ```
+
+
+

@@ -1,5 +1,3 @@
-[TOC]
-
 # 1. 用栈实现队列
 
 232\. Implement Queue using Stacks  / 用栈实现队列 (Easy)
@@ -291,7 +289,11 @@ Output: [1, 1, 4, 2, 1, 1, 0, 0]
 
 <img src="https://pic.leetcode-cn.com/7a133e857271e638c04b3a27c1eabc29570e585cc44d7da60eb039459a7f89cd-739.gif" alt="739.gif" style="zoom: 33%;" />
 
-写法1：通用写法
+**拓展**：若要**前一个**比当前数大的数，则要顺序入栈
+
+
+
+写法1：**通用写法**，逆序入栈
 
 ```C++
 class Solution {
@@ -300,9 +302,7 @@ public:
         vector<int> res(T.size());
         stack<int> stk;
         for(int i = T.size() - 1; i >= 0; i--) { // 倒着往栈里放
-            while(!stk.empty() && T[i] >= T[stk.top()]) { // 小的出栈
-                stk.pop();
-            }
+            while(!stk.empty() && T[i] >= T[stk.top()]) stk.pop(); // 小的出栈
             res[i] = stk.empty() ? 0 : (stk.top() - i); // 栈中留下的即为大的
             stk.push(i); // 入栈等待判定
         }
@@ -311,7 +311,7 @@ public:
 };
 ```
 
-写法2：
+写法2：顺序
 
 ```C++
 class Solution {
@@ -431,3 +431,65 @@ public:
     }
 };
 ```
+
+
+
+# 单调队列
+
+单调队列需要使用双端队列deque实现，也可以使用数组加双指针模拟双端队列，通常会使用双指针解决单调栈相关的问题。
+
+
+
+## 1. 滑动窗口最大值
+
+[Leetcode 239. 滑动窗口最大值](https://leetcode-cn.com/problems/sliding-window-maximum/)
+
+**题解**：队列中存储元素下标，主要步骤：
+
+- 判断队头是否已经滑出窗口：起点大于队头的值，说明队头已滑出窗口，弹出队头
+- 判断队尾是否需要弹出：当前值比队尾值更小，弹出队尾
+
+方法1：数组模拟双端队列
+
+```C++
+class Solution {
+public:
+    vector<int> maxSlidingWindow(vector<int>& nums, int k) {
+        vector<int> res;
+        if(nums.empty()) return res;
+
+        int q[nums.size()]; // 队列
+        int hh = 0, tt = -1; // 队头指针，队尾指针
+
+        for(int i = 0; i < nums.size(); i++) {
+            if(hh <= tt && i - k + 1 > q[hh]) hh++; // 起点大于队头的值，说明队头已滑出窗口，弹出队头
+            while(hh <= tt && nums[i] >= nums[q[tt]]) tt--; // 当前值比队尾值更大，弹出队尾
+            q[++tt] = i; // 插入当前值
+            if(i >= k - 1) res.push_back(nums[q[hh]]); // 输出前k个数
+        }
+        return res;
+    }
+};
+```
+
+方法2：使用deque
+
+```C++
+class Solution {
+public:
+    vector<int> maxSlidingWindow(vector<int>& nums, int k) {
+        vector<int> res;
+        if(nums.empty()) return res;
+
+        deque<int> dq;
+        for(int i = 0; i < nums.size(); i++) {
+            if(!dq.empty() && i - k + 1 > dq.front()) dq.pop_front(); // 起点大于队头，说明队头已滑出窗口
+            while(!dq.empty() && nums[i] >= nums[dq.back()]) dq.pop_back(); // 当前值比队尾值大，弹出队尾
+            dq.push_back(i); // 插入当前值
+            if(i >= k - 1) res.push_back(nums[dq.front()]); // 输出前k个数
+        }
+        return res;
+    }
+};
+```
+

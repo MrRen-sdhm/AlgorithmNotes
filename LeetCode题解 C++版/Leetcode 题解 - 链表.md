@@ -1,14 +1,3 @@
-* [1. 找出两个链表的交点](#1-找出两个链表的交点)
-* [2. 链表反转](#2-链表反转)
-* [3. 归并两个有序的链表](#3-归并两个有序的链表)
-* [4. 从有序链表中删除重复节点](#4-从有序链表中删除重复节点)
-* [5. 删除链表的倒数第 n 个节点](#5-删除链表的倒数第-n-个节点)
-* [6. 交换链表中的相邻结点](#6-交换链表中的相邻结点)
-* [7. 链表求和](#7-链表求和)
-* [8. 回文链表](#8-回文链表)
-* [9. 分隔链表](#9-分隔链表)
-* [10. 链表元素按奇偶聚集](#10-链表元素按奇偶聚集)
-
 
 链表是空节点，或者有一个值和一个指向下一个链表的指针，因此很多链表问题可以用递归来处理。
 
@@ -191,7 +180,41 @@ public:
 
 
 
-#  4. 从有序链表中删除重复节点
+#  4. 删除链表中的节点
+
+[Leetcode 237. 删除链表中的节点](https://leetcode-cn.com/problems/delete-node-in-a-linked-list/)
+
+删除链表中的某个节点，此节点不会是尾节点
+
+**题解**：
+
+从链表里删除一个节点 node 的最常见方法是修改之前节点的 next 指针，使其指向之后的节点。
+
+<img src="https://pic.leetcode-cn.com/3579a496897df5321c110bf1301872b6e10c342f5e400ce45d2db0348d00d715-file_1555866623326" alt="img" style="zoom:67%;" />
+
+因为，我们无法访问我们想要删除的节点 之前 的节点，我们始终不能修改该节点的 next 指针。相反，我们必须将想要删除的节点的值替换为它后面节点中的值，然后删除它之后的节点。
+
+<img src="https://pic.leetcode-cn.com/858fae01d89c2080eb7e45a1f9d9a2b2f76e1a5c87815b324fd946e0bd8da495-file_1555866651920" alt="img" style="zoom:67%;" />
+
+
+
+<img src="https://pic.leetcode-cn.com/902dc5d3f8c44d3cbc0b6e837711cad2eefc021fd2b9de8dfabc6d478bc779b1-file_1555866680932" alt="img" style="zoom:67%;" />
+
+因为我们知道要删除的节点不是列表的末尾，所以我们可以保证这种方法是可行的
+
+```C++
+class Solution {
+public:
+    void deleteNode(ListNode* node) {
+        node->val = node->next->val;
+        node->next = node->next->next;
+    }
+};
+```
+
+
+
+#  从有序链表中删除重复节点
 
 83\. Remove Duplicates from Sorted List (Easy)
 
@@ -442,3 +465,11 @@ public ListNode oddEvenList(ListNode head) {
     return head;
 }
 ```
+
+
+
+# 11. 排序链表
+
+[Leetcode 148. 排序链表](https://leetcode-cn.com/problems/sort-list/)  / [AcWing 1451. 单链表快速排序](https://www.acwing.com/problem/content/1453/)
+
+[题解](https://www.acwing.com/solution/LeetCode/content/408/)
