@@ -1348,7 +1348,7 @@ public:
 
 ## 3. 把二叉查找树每个节点的值都加上比它大的节点的值
 
-Convert BST to Greater Tree (Easy)
+538\. Convert BST to Greater Tree / 把二叉搜索树转换为累加树 (Easy)
 
 [Leetcode](https://leetcode.com/problems/convert-bst-to-greater-tree/description/) / [力扣](https://leetcode-cn.com/problems/convert-bst-to-greater-tree/description/)
 
@@ -1366,24 +1366,24 @@ Output: The root of a Greater Tree like this:
           20     13
 ```
 
-先遍历右子树。
+**题解**：将中序遍历左根右的顺序逆过来，变成右根左的顺序，这样就可以反向计算累加和sum，同时更新结点值。例如按13->5->2的顺序遍历，sum+=13，此时sum = 13，为右子节点更新后的值。sum+=5，此时sum=18，为根节点更新后的值。sum+=2，此时sum=20，为左子节点更新后的值。
 
 ```C++
-private int sum = 0;
-
-public TreeNode convertBST(TreeNode root) {
-    traver(root);
-    return root;
-}
-
-private void traver(TreeNode node) {
-    if (node == null) return;
-    traver(node.right);
-    sum += node.val;
-    node.val = sum;
-    traver(node.left);
-}
+class Solution {
+public:
+    int sum = 0;
+    TreeNode* convertBST(TreeNode* root) {
+        if(!root) return NULL;
+        convertBST(root->right);
+        sum += root->val; // 累加计算当前节点的值
+        root->val = sum;
+        convertBST(root->left);
+        return root;
+    }
+};
 ```
+
+
 
 ## 4. 二叉查找树的最近公共祖先
 

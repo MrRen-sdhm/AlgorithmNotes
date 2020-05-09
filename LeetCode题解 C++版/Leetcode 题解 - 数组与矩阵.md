@@ -1,16 +1,3 @@
-* [1. 把数组中的 0 移到末尾](#1-把数组中的-0-移到末尾)
-* [2. 改变矩阵维度](#2-改变矩阵维度)
-* [3. 找出数组中最长的连续 1](#3-找出数组中最长的连续-1)
-* [4. 有序矩阵查找](#4-有序矩阵查找)
-* [5. 有序矩阵的 Kth Element](#5-有序矩阵的-kth-element)
-* [6. 一个数组元素在 [1, n] 之间，其中一个数被替换为另一个数，找出重复的数和丢失的数](#6-一个数组元素在-[1,-n]-之间，其中一个数被替换为另一个数，找出重复的数和丢失的数)
-* [7. 找出数组中重复的数，数组值在 [1, n] 之间](#7-找出数组中重复的数，数组值在-[1,-n]-之间)
-* [8. 数组相邻差值的个数](#8-数组相邻差值的个数)
-* [9. 数组的度](#9-数组的度)
-* [10. 对角元素相等的矩阵](#10-对角元素相等的矩阵)
-* [11. 嵌套数组](#11-嵌套数组)
-* [12. 分隔数组](#12-分隔数组)
-
 
 # 1. 把数组中的 0 移到末尾
 
@@ -187,6 +174,8 @@ class Tuple implements Comparable<Tuple> {
 }
 ```
 
+
+
 # 6. 一个数组元素在 [1, n] 之间，其中一个数被替换为另一个数，找出重复的数和丢失的数
 
 645\. Set Mismatch (Easy)
@@ -229,49 +218,13 @@ private void swap(int[] nums, int i, int j) {
 }
 ```
 
-# 7. 找出数组中重复的数，数组值在 [1, n] 之间
 
-287\. Find the Duplicate Number (Medium)
 
-[Leetcode](https://leetcode.com/problems/find-the-duplicate-number/description/) / [力扣](https://leetcode-cn.com/problems/find-the-duplicate-number/description/)
+# 7. 
 
-要求不能修改数组，也不能使用额外的空间。
 
-二分查找解法：
 
-```java
-public int findDuplicate(int[] nums) {
-     int l = 1, h = nums.length - 1;
-     while (l <= h) {
-         int mid = l + (h - l) / 2;
-         int cnt = 0;
-         for (int i = 0; i < nums.length; i++) {
-             if (nums[i] <= mid) cnt++;
-         }
-         if (cnt > mid) h = mid - 1;
-         else l = mid + 1;
-     }
-     return l;
-}
-```
 
-双指针解法，类似于有环链表中找出环的入口：
-
-```java
-public int findDuplicate(int[] nums) {
-    int slow = nums[0], fast = nums[nums[0]];
-    while (slow != fast) {
-        slow = nums[slow];
-        fast = nums[nums[fast]];
-    }
-    fast = 0;
-    while (slow != fast) {
-        slow = nums[slow];
-        fast = nums[fast];
-    }
-    return slow;
-}
-```
 
 # 8. 数组相邻差值的个数
 
@@ -596,4 +549,62 @@ public:
 ```
 
 
+
+# 15. 数组中缺失的数字
+
+
+
+**题解**：
+
+方法1：使用负号标记
+
+对于每个数字nums[i]，如果其对应的nums[nums[i] - 1]是正数，我们就赋值为其相反数，如果已经是负数了，就不变了，那么最后我们只要把留下的正数对应的位置加入结果res中即可。使用负号做标记的好处是，其绝对值仍然是原来的数。
+
+```C++
+class Solution {
+public:
+    vector<int> findDisappearedNumbers(vector<int>& nums) {
+        int n = nums.size();
+        vector<int> res;
+
+        for(int i = 0; i < n; i++) {
+            int idx = abs(nums[i]) - 1; // nums[i]对应的索引位置为nums[i]-1
+            if(nums[idx] > 0) nums[idx] *= -1; // 标记此位置为负数，表示已有对应值
+        }
+
+        for(int i = 0; i < n; i++) {
+            if(nums[i] > 0)
+                res.push_back(i + 1);
+        }
+        return res;
+    }
+};
+```
+
+方法2：加上数组长度n做标记
+
+在nums[nums[i]-1]位置累加数组长度n，注意nums[i]-1有可能越界，所以我们需要对n取余，最后要找出缺失的数只需要看nums[i]的值是否小于等于n即可。
+
+例如最后遍历完nums[i]数组为[12, 19, 18, 15, 8, 2, 11, 9]，我们发现有两个数字8和2小于等于n，那么就可以通过i+1来得到正确的结果5和6了
+
+```C++
+class Solution {
+public:
+    vector<int> findDisappearedNumbers(vector<int>& nums) {
+        int n = nums.size();
+        vector<int> res;
+
+        for(int i = 0; i < n; i++) {
+            int idx = (nums[i] - 1) % n; // nums[i]对应的索引位置为nums[i]-1
+            if(nums[idx] <= n) nums[idx] += n; // 此位置加n，表示已有对应值
+        }
+
+        for(int i = 0; i < n; i++) {
+            if(nums[i] <= n)
+                res.push_back(i + 1);
+        }
+        return res;
+    }
+};
+```
 

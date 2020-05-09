@@ -367,7 +367,7 @@ public:
 
 # 二分查找变形
 
-## 1. 有序数组中只出现一次的数字✏️
+## 1. 有序数组中只出现一次的数字⭐️
 
 540\. Single Element in a Sorted Array / 有序数组中的单一元素 (Medium)
 
@@ -388,7 +388,7 @@ Output: 2
 
 
 
-方法1：
+方法1：偶数位二分查找
 
 令 index 为 Single Element 在数组中的位置。在 index 之后，数组中原来存在的成对状态被改变。如果 m 为偶数，并且 m + 1 < index，那么 nums[m] == nums[m + 1]；m + 1 >= index，那么 nums[m] != nums[m + 1]。
 
@@ -415,7 +415,7 @@ public:
 
 
 
-方法2：
+方法2：二分查找+异或运算
 
 **技巧：异或1运算可以将坐标两两归为一对，比如0和1，2和3，4和5等等**。异或1可以直接找到一对中的另一个数字，比如对于2，亦或1就是3，对于3，亦或1就是2。如果你和你的小伙伴相等了，说明落单数在右边，如果不等，说明在左边。
 
@@ -437,9 +437,13 @@ public:
 
 
 
-## 2. 寻找重复数
+## 2. 寻找数组中重复的数⭐️
 
-[Leetcode 287. 寻找重复数 (Medium)](https://leetcode-cn.com/problems/find-the-duplicate-number/)
+287\. Find the Duplicate Number / 寻找重复数 (Medium)
+
+[Leetcode](https://leetcode.com/problems/find-the-duplicate-number/description/) / [力扣](https://leetcode-cn.com/problems/find-the-duplicate-number/description/)
+
+要求不能修改数组，也不能使用额外的空间。
 
 ```
 Input: [1,3,4,2,2]
@@ -479,6 +483,8 @@ public:
 ```
 
 [方法2](https://leetcode-cn.com/problems/find-the-duplicate-number/solution/kuai-man-zhi-zhen-de-jie-shi-cong-damien_undoxie-d/)：快慢指针
+
+由于题目限定了区间 [1,n]，所以可以巧妙的利用坐标和数值之间相互转换，而由于重复数字的存在，那么一定会形成环，用快慢指针可以找到环并确定环的起始位置
 
 ```C++
 class Solution {
