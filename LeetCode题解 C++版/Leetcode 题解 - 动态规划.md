@@ -38,6 +38,8 @@ public:
 };
 ```
 
+
+
 ## 2. 强盗抢劫
 
 198\. House Robber (Easy)
@@ -69,6 +71,8 @@ public:
     }
 };
 ```
+
+
 
 ## 3. 强盗在环形街区抢劫
 
@@ -105,6 +109,8 @@ public:
 };
 ```
 
+
+
 ## 4. 信件错排
 
 题目描述：有 N 个 信 和 信封，它们被打乱，求错误装信方式的数量（所有信封都没有装各自的信）。
@@ -118,6 +124,8 @@ public:
 
 <div align="center"> <img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/da1f96b9-fd4d-44ca-8925-fb14c5733388.png" width="350px"> </div><br>
 
+
+
 ## 5. 母牛生产
 
 [程序员代码面试指南-P181](#)
@@ -128,7 +136,7 @@ public:
 
 <div align="center"> <img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/879814ee-48b5-4bcb-86f5-dcc400cb81ad.png" width="250px"> </div><br>
 
-# 三角形路径
+# 三角形路径（线性DP）
 
 120\. 三角形最小路径和 （Medium）[力扣](https://leetcode-cn.com/problems/triangle/)
 
@@ -200,7 +208,7 @@ public:
 
 
 
-# 矩阵路径
+# 矩阵路径（线性DP）
 
 ## 1. 矩阵的最小路径和
 
@@ -381,11 +389,11 @@ public:
 
 
 
-# 数组区间
+# 数组区间（区间DP）
 
 ## 1. 数组区间和
 
-303\. Range Sum Query - Immutable (Easy)
+303\. Range Sum Query - Immutable / 区域和检索 - 数组不可变 (Easy)
 
 [Leetcode](https://leetcode.com/problems/range-sum-query-immutable/description/) / [力扣](https://leetcode-cn.com/problems/range-sum-query-immutable/description/)
 
@@ -397,29 +405,32 @@ sumRange(2, 5) -> -1
 sumRange(0, 5) -> -3
 ```
 
-求区间 i \~ j 的和，可以转换为 sum[j + 1] - sum[i]，其中 sum[i] 为 0 \~ i - 1 的和。
+**题解**：
 
-```java
+求区间 i \~ j 的和，可以转换为 sum[j + 1] - sum[i]，其中 sum[i] 为 0 \~ i - 1 的和，实际上就是利用前缀和求区间和。
+
+```C++
 class NumArray {
-
-    private int[] sums;
-
-    public NumArray(int[] nums) {
-        sums = new int[nums.length + 1];
-        for (int i = 1; i <= nums.length; i++) {
-            sums[i] = sums[i - 1] + nums[i - 1];
+public:
+    vector<int> sum; // 前缀和数组
+    NumArray(vector<int>& nums) {
+        sum = vector<int>(nums.size() + 1, 0);
+        for(int i = 1; i <= nums.size(); i++) { // 构建前缀和数组
+            sum[i] = sum[i - 1] + nums[i - 1];
         }
     }
-
-    public int sumRange(int i, int j) {
-        return sums[j + 1] - sums[i];
+    
+    int sumRange(int i, int j) {
+        return sum[j + 1] - sum[i]; // 根据前缀和求区间和
     }
-}
+};
 ```
+
+
 
 ## 2. 数组中等差递增子区间的个数
 
-413\. Arithmetic Slices (Medium)
+413\. Arithmetic Slices / 等差数列划分 (Medium)
 
 [Leetcode](https://leetcode.com/problems/arithmetic-slices/description/) / [力扣](https://leetcode-cn.com/problems/arithmetic-slices/description/)
 
@@ -436,7 +447,7 @@ return: 6, for 3 arithmetic slices in A:
 [2, 3, 4]
 ```
 
-dp[i] 表示以 A[i] 为结尾的等差递增子区间的个数。
+**题解**：**dp[i] 表示以 A[i] 为结尾的等差递增子区间中元素的个数**。
 
 当 A[i] - A[i-1] == A[i-1] - A[i-2]，那么 [A[i-2], A[i-1], A[i]] 构成一个等差递增子区间。而且在以 A[i-1] 为结尾的递增子区间的后面再加上一个 A[i]，一样可以构成新的递增子区间。
 
@@ -452,31 +463,31 @@ dp[4] = dp[3] + 1 = 3
     [2, 3, 4]        // 新的递增子区间
 ```
 
-综上，在 A[i] - A[i-1] == A[i-1] - A[i-2] 时，dp[i] = dp[i-1] + 1。
+综上，**在 A[i] - A[i-1] == A[i-1] - A[i-2] 时，dp[i] = dp[i-1] + 1**。
 
 因为递增子区间不一定以最后一个元素为结尾，可以是任意一个元素结尾，因此需要返回 dp 数组累加的结果。
 
-```java
-public int numberOfArithmeticSlices(int[] A) {
-    if (A == null || A.length == 0) {
-        return 0;
-    }
-    int n = A.length;
-    int[] dp = new int[n];
-    for (int i = 2; i < n; i++) {
-        if (A[i] - A[i - 1] == A[i - 1] - A[i - 2]) {
-            dp[i] = dp[i - 1] + 1;
+```C++
+class Solution {
+public:
+    int numberOfArithmeticSlices(vector<int>& A) {
+        int n = A.size();
+        vector<int> dp(n, 0);
+        for(int i = 2; i < n; i++) {
+            if(A[i - 1] - A[i - 2] == A[i] - A[i - 1])
+                dp[i] = dp[i - 1] + 1;
         }
+        int res = 0;
+        for(int cnt : dp)
+            res += cnt;
+        return res;
     }
-    int total = 0;
-    for (int cnt : dp) {
-        total += cnt;
-    }
-    return total;
-}
+};
 ```
 
-# 分割整数
+
+
+# 分割整数（计数类DP）✏️
 
 ## 1. 分割整数的最大乘积
 
@@ -498,6 +509,8 @@ public int integerBreak(int n) {
     return dp[n];
 }
 ```
+
+
 
 ## 2. 按平方数来分割整数
 
@@ -537,6 +550,8 @@ private List<Integer> generateSquareList(int n) {
 }
 ```
 
+
+
 ## 3. 分割整数构成字母字符串
 
 91\. Decode Ways (Medium)
@@ -571,7 +586,9 @@ public int numDecodings(String s) {
 }
 ```
 
-# 最长递增子序列
+
+
+# 最长递增子序列（线性DP）
 
 已知一个序列 {S<sub>1</sub>, S<sub>2</sub>,...,S<sub>n</sub>}，取出若干数组成新的序列 {S<sub>i1</sub>, S<sub>i2</sub>,..., S<sub>im</sub>}，其中 i1、i2 ... im 保持递增，即新序列中各个数仍然保持原数列中的先后顺序，称新序列为原序列的一个  **子序列**  。
 
@@ -585,13 +602,32 @@ public int numDecodings(String s) {
 
 对于一个长度为 N 的序列，最长递增子序列并不一定会以 S<sub>N</sub> 为结尾，因此 dp[N] 不是序列的最长递增子序列的长度，需要遍历 dp 数组找出最大值才是所要的结果，max{ dp[i] | 1 <= i <= N} 即为所求。
 
+
+
 ## 1. 最长递增子序列
 
-300\. Longest Increasing Subsequence (Medium)
+300\. Longest Increasing Subsequence / 最长上升子序列 (Medium)
 
 [Leetcode](https://leetcode.com/problems/longest-increasing-subsequence/description/) / [力扣](https://leetcode-cn.com/problems/longest-increasing-subsequence/description/)
 
-```java
+**题解**：
+
+方法1：
+
+- 状态表示`f[i]`：以第 i 个数结尾的上升子序列的长度的最大值
+  - 状态集合：所有以第 i 个数结尾的上升子序列
+  - 集合属性：上升子序列的长度的最大值
+- 状态计算
+  - 状态集合`f(i)`分类：以第 i - 1个数（倒数第一个数）是哪个来分类
+  - 倒数第一个数可以为 `a[0]、a[1] ... a[i - 1]`，但必须小于`a[i]`
+- 状态转移方程：`f[i] = max(f[j] + 1) | j = 0, 1, 2, ... , i-1 && a[j] < a[i]`
+  - 以第 i 个数结尾的上升子序列的长度为以第 j 个数结尾的上升子序列的长度+1，但 j 可以取0~i-1中值小于a[i]的所有位置。
+  - 为了求以 i 结尾的上升子序列的最大值，需要枚举第 j 个数结尾的上升自序列的长度，并求最大值。
+  - 为了求整个数列的最大值，需要枚举每个数结尾的最长上升子序列的长度，并求最大值（这一步在DP循环外完成）。
+- 边界条件：只有 a[i] 一个数时，以 a[i] 结尾的上升子序列的长度为1
+- 转态数量为n，状态转移的计算量为O(n)，因而时间复杂度为O(n^2^)
+
+```C++
 class Solution {
 public:
     int lengthOfLIS(vector<int>& nums) {
@@ -599,9 +635,9 @@ public:
 
         // 求以nums[i]结尾的上升子序列的长度的最大值
         for(int i = 1; i <= nums.size(); i++) {
-            dp[i] = 1;
+            dp[i] = 1; // 只有nums[i]一个数时，长度为1
             for(int j = 1; j < i; j++) {
-                if(nums[i - 1] > nums[j - 1])
+                if(nums[i - 1] > nums[j - 1]) // 第i个数为nums[i-1]
                     dp[i] = max(dp[i], dp[j] + 1);
             }
         }
@@ -609,6 +645,10 @@ public:
     }
 };
 ```
+
+
+
+方法2：
 
 以上解法的时间复杂度为 O(N<sup>2</sup>)，可以使用二分查找将时间复杂度降低为 O(NlogN)。
 
@@ -661,9 +701,11 @@ private int binarySearch(int[] tails, int len, int key) {
 }
 ```
 
+
+
 ## 2. 一组整数对能够构成的最长链
 
-646\. Maximum Length of Pair Chain (Medium)
+646\. Maximum Length of Pair Chain / 最长数对链 (Medium)
 
 [Leetcode](https://leetcode.com/problems/maximum-length-of-pair-chain/description/) / [力扣](https://leetcode-cn.com/problems/maximum-length-of-pair-chain/description/)
 
@@ -675,31 +717,70 @@ Explanation: The longest chain is [1,2] -> [3,4]
 
 题目描述：对于 (a, b) 和 (c, d) ，如果 b < c，则它们可以构成一条链。
 
-```java
-public int findLongestChain(int[][] pairs) {
-    if (pairs == null || pairs.length == 0) {
-        return 0;
-    }
-    Arrays.sort(pairs, (a, b) -> (a[0] - b[0]));
-    int n = pairs.length;
-    int[] dp = new int[n];
-    Arrays.fill(dp, 1);
-    for (int i = 1; i < n; i++) {
-        for (int j = 0; j < i; j++) {
-            if (pairs[j][1] < pairs[i][0]) {
-                dp[i] = Math.max(dp[i], dp[j] + 1);
+**题解**：
+
+方法1：动态规划，时间复杂度O(n^2^)
+
+**dp[i]表示以 pairs[i] 结尾的最长链的长度**
+
+- 首先需要对各个数对按照**首元素**排序，然后枚举各个数对，判断其前面是否有可以连接的数对，取连接后可以达到的最大值；
+- 以pairs[i] 结尾的最长链长度至少是1，因而dp数组全部初始化为1
+
+```C++
+class Solution {
+public:
+    int findLongestChain(vector<vector<int>>& pairs) {
+        int n = pairs.size();
+        if(n == 0) return 0;
+        sort(pairs.begin(), pairs.end());
+        vector<int> dp(n, 1); // 初始长度是1
+        for(int i = 1; i < n; i++) {
+            for(int j = 0; j < i; j++) {
+                if(pairs[j][1] < pairs[i][0]) { // b < c 可加入数对链
+                    dp[i] = max(dp[i], dp[j] + 1); // 链长加1
+                }
             }
         }
+        return dp[n - 1];
     }
-    return Arrays.stream(dp).max().orElse(0);
-}
+};
 ```
+
+
+
+方法2：区间贪心，时间复杂度O(nlogn)，排序O(nlogn)，贪心O(n)
+
+首先对链对数组进行排序，按链对的**尾元素**进行排序，小的放前面。用一个变量end来记录当前比较到的尾元素的值，初始化为最小值，然后遍历的时候，如果当前链对的首元素大于end，那么cnt自增1，end更新为当前链对的尾元素。排序后的解法类似于[Leetcode 435.无重叠区间](https://leetcode-cn.com/problems/non-overlapping-intervals/)
+
+```C++
+class Solution {
+public:
+    int findLongestChain(vector<vector<int>>& pairs) {
+        sort(pairs.begin(), pairs.end(), [](vector<int> &a, vector<int> &b) {return a[1] < b[1];});
+        int cnt = 0, end = INT_MIN;
+        for(auto pair : pairs) {
+            if(pair[0] > end) {
+                cnt++; end = pair[1];
+            }
+        }
+        return cnt;
+    }
+};
+```
+
+
+
+## [354. 俄罗斯套娃信封问题](https://leetcode-cn.com/problems/russian-doll-envelopes/)✏️
+
+
 
 ## 3. 最长摆动子序列
 
-376\. Wiggle Subsequence (Medium)
+376\. Wiggle Subsequence / 摆动序列 (Medium)
 
 [Leetcode](https://leetcode.com/problems/wiggle-subsequence/description/) / [力扣](https://leetcode-cn.com/problems/wiggle-subsequence/description/)
+
+要求：使用 O(N) 时间复杂度求解。
 
 ```html
 Input: [1,7,4,9,2,5]
@@ -714,26 +795,74 @@ Input: [1,2,3,4,5,6,7,8,9]
 Output: 2
 ```
 
-要求：使用 O(N) 时间复杂度求解。
 
-```java
-public int wiggleMaxLength(int[] nums) {
-    if (nums == null || nums.length == 0) {
-        return 0;
-    }
-    int up = 1, down = 1;
-    for (int i = 1; i < nums.length; i++) {
-        if (nums[i] > nums[i - 1]) {
-            up = down + 1;
-        } else if (nums[i] < nums[i - 1]) {
-            down = up + 1;
+
+方法1：DP，时间复杂度O(n^2^)，空间复杂度O(n)
+
+维护两个DP数组，分别记作 up 和 down 。每当我们选择一个元素作为摆动序列的一部分时，这个元素要么是上升的，要么是下降的，这取决于前一个元素的大小。
+
+**up[i] 表示以第i个数结尾时序列上升（nums[i] > nums[i-1]）的摆动序列的最大长度。down[i] 表示以第i个数结尾时序列下降（nums[i] < nums[i-1]）的摆动序列的最大长度。**
+
+从i=1开始遍历数组，然后对于每个遍历到的数字，再从开头位置遍历到这个数字，然后比较nums[i]和nums[j]，分别更新对应的位置，若nums[i] > nums[j]则更新up，若nums[i] < nums[j]则更新down。
+
+- 如果 nums[i] > nums[i-1] ，意味着这里在摆动上升，前一个数字肯定处于下降的位置。所以 up[i] = down[i-1] + 1，down[i] 与 down[i-1]保持相同。
+
+- 如果 nums[i] < nums[i-1] ，意味着这里在摆动下降，前一个数字肯定处于下降的位置。所以 down[i] = up[i-1] + 1， up[i]与 up[i-1]保持不变。
+
+up[i] = max(up[i], down[j] + 1)，down[i] = max(down[i], up[j] + 1)
+
+子序列的长度至少为1，dp数组全部初始化为1
+
+最终取上升摆动序列和下降摆动序列长度中的最大值
+
+```C++
+class Solution {
+public:
+    int wiggleMaxLength(vector<int>& nums) {
+        int n = nums.size();
+        if(n == 0) return 0;
+        vector<int> up(n, 1), down(n, 1);
+
+        for(int i = 1; i < n; i++) {
+            for(int j = 0; j < i; j++) {
+                if(nums[i] > nums[j])
+                    up[i] = max(up[i], down[j] + 1);
+                else if(nums[i] < nums[j])
+                    down[i] = max(down[i], up[j] + 1);
+            }
         }
+        return max(up[n - 1], down[n - 1]);
     }
-    return Math.max(up, down);
-}
+};
 ```
 
-# 最长公共子序列
+
+
+方法2：贪心，时间复杂度O(n)，空间复杂度O(1)
+
+DP 过程中更新 up[i] 和 down[i]，其实只需要 up[i-1] 和 down[i-1]。因此，可以通过只记录最后一个元素的值而不使用数组来节省空间，同时也将时间复杂度降到O(n)。
+
+```C++
+class Solution {
+public:
+    int wiggleMaxLength(vector<int>& nums) {
+        int n = nums.size();
+        if(n == 0) return 0;
+        int up = 1, down = 1;
+        for(int i = 1; i < n; i++) {
+            if(nums[i] < nums[i - 1])
+                down = up + 1;
+            else if(nums[i] > nums[i - 1])
+                up = down + 1;
+        }
+        return max(up, down);
+    }
+};
+```
+
+
+
+# 最长公共子序列（线性DP）
 
 对于两个子序列 S1 和 S2，找出它们最长的公共子序列。
 
@@ -754,41 +883,50 @@ public int wiggleMaxLength(int[] nums) {
 - 在最长递增子序列中，dp[i] 表示以 S<sub>i</sub> 为结尾的最长递增子序列长度，子序列必须包含 S<sub>i</sub> ；在最长公共子序列中，dp[i][j] 表示 S1 中前 i 个字符与 S2 中前 j 个字符的最长公共子序列长度，不一定包含 S1<sub>i</sub> 和 S2<sub>j</sub>。
 - 在求最终解时，最长公共子序列中 `dp[N][M]` 就是最终解，而最长递增子序列中 dp[N] 不是最终解，因为以 S<sub>N</sub> 为结尾的最长递增子序列不一定是整个序列最长递增子序列，需要遍历一遍 dp 数组找到最大者。
 
+
+
 ## 1. 最长公共子序列
 
 1143\. Longest Common Subsequence
 
 [Leetcode](https://leetcode.com/problems/longest-common-subsequence/) / [力扣](https://leetcode-cn.com/problems/longest-common-subsequence/)
 
-```java
-    public int longestCommonSubsequence(String text1, String text2) {
-        int n1 = text1.length(), n2 = text2.length();
-        int[][] dp = new int[n1 + 1][n2 + 1];
-        for (int i = 1; i <= n1; i++) {
-            for (int j = 1; j <= n2; j++) {
-                if (text1.charAt(i - 1) == text2.charAt(j - 1)) {
-                    dp[i][j] = dp[i - 1][j - 1] + 1;
-                } else {
-                    dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
-                }
+```C++
+class Solution {
+public:
+    int longestCommonSubsequence(string text1, string text2) {
+        int m = text1.size(), n = text2.size();
+        vector<vector<int>> dp(m + 1, vector<int>(n + 1, 0));
+
+        for(int i = 1; i <= m; i++) {
+            for(int j = 1; j <= n; j++) {
+                if(text1[i - 1] == text2[j - 1]) dp[i][j] = dp[i-1][j-1] + 1;
+                else dp[i][j] = max(dp[i-1][j], dp[i][j-1]);
             }
         }
-        return dp[n1][n2];
+        return dp[m][n];
     }
+};
 ```
 
 
 
-# 最长等差数列
+# 最长等差数列（线性DP）
 
-1027.最长等差数列
+Leetcode 1027.最长等差数列
 
-[力扣](https://leetcode-cn.com/problems/longest-arithmetic-sequence/) 给定一个整数数组 `A`，返回 `A` 中最长等差子序列的长度。
+[力扣](https://leetcode-cn.com/problems/longest-arithmetic-sequence/) 
+
+给定一个整数数组 `A`，返回 `A` 中最长等差子序列的长度。
+
+**题解**：
 
 `dp[i][diff]` 表示前0~i范围内，公差为diff的等差数列的长度，其中 `diff=A[i]-A[j]`，`n>i>j>=0`。则状态转移方程有两种情况：
 
 1. `dp[j][diff]` 存在，又因为 `diff=A[i]-A[j]`，则在原始以 A[j] 为结尾的等差数列的后面可以添上 `A[i]`，有 `dp[i][diff] = dp[j][diff] + 1`。
 2. 否则，则 A[i] 和 A[j] 两个数可以构成一个只有两个元素且偏移值为 diff 的等差数列，有 `dp[i][diff] = 2`。
+
+
 
 方法1：使用哈希表来保存每一列，即每种公差对应的数列长度，无需对原数组进行排序，键为公差，值为长度
 
@@ -814,6 +952,8 @@ public:
     }
 };
 ```
+
+
 
 方法2：使用vector来保存每一列，即每种公差对应的数列长度，需要先原数组进行排序（下面的解法未通过所有测试用例）
 
@@ -1203,6 +1343,8 @@ private int findTargetSumWays(int[] nums, int start, int S) {
 }
 ```
 
+
+
 ## 3. 01 字符构成最多的字符串
 
 474\. Ones and Zeroes (Medium)
@@ -1242,6 +1384,8 @@ public int findMaxForm(String[] strs, int m, int n) {
     return dp[m][n];
 }
 ```
+
+
 
 ## 4. 找零钱的最少硬币数
 
@@ -1295,6 +1439,8 @@ public:
 };
 ```
 
+
+
 ## 5. 找零钱的硬币数组合
 
 518\. Coin Change 2 (Medium)
@@ -1328,6 +1474,8 @@ public int change(int amount, int[] coins) {
     return dp[amount];
 }
 ```
+
+
 
 ## 6. 字符串按单词列表分割
 
@@ -1367,6 +1515,8 @@ public boolean wordBreak(String s, List<String> wordDict) {
     return dp[n];
 }
 ```
+
+
 
 ## 7. 组合总和
 
@@ -1411,6 +1561,8 @@ public int combinationSum4(int[] nums, int target) {
 }
 ```
 
+
+
 # 股票交易
 
 ## 1. 需要冷却期的股票交易
@@ -1445,6 +1597,8 @@ public int maxProfit(int[] prices) {
     return Math.max(A[N - 1], C[N - 1]);
 }
 ```
+
+
 
 ## 2. 需要交易费用的股票交易
 
@@ -1485,6 +1639,7 @@ public int maxProfit(int[] prices, int fee) {
 ```
 
 
+
 ## 3. 只能进行两次的股票交易
 
 123\. Best Time to Buy and Sell Stock III (Hard)
@@ -1512,6 +1667,8 @@ public int maxProfit(int[] prices) {
     return secondSell;
 }
 ```
+
+
 
 ## 4. 只能进行 k 次的股票交易
 
@@ -1543,7 +1700,9 @@ public int maxProfit(int k, int[] prices) {
 }
 ```
 
-# 字符串编辑
+
+
+# 字符串编辑（线性DP）
 
 ## 1. 删除两个字符串的字符使它们相等
 
@@ -1575,6 +1734,8 @@ public int minDistance(String word1, String word2) {
     return m + n - 2 * dp[m][n];
 }
 ```
+
+
 
 ## 2. 编辑距离
 
@@ -1630,6 +1791,8 @@ public int minDistance(String word1, String word2) {
     return dp[m][n];
 }
 ```
+
+
 
 ## 3. 复制粘贴字符
 

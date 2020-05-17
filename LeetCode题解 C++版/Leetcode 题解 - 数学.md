@@ -37,6 +37,8 @@ x 和 y 的最小公倍数为：lcm(x,y) =  2<sup>max(m0,n0)</sup> \* 3<sup>max(
 
 埃拉托斯特尼筛法在每次找到一个素数时，将能被素数整除的数排除掉。需要注意的是，此题求的是**小于**n的质数
 
+![File:Sieve of Eratosthenes animation.gif](https://upload.wikimedia.org/wikipedia/commons/b/b9/Sieve_of_Eratosthenes_animation.gif)
+
 ```java
 class Solution {
 public:
@@ -54,6 +56,53 @@ public:
     }
 };
 ```
+
+有一点可以优化：j 从 i * i 开始筛，因为如果 k < i，那么 k * i 在之前就已经被筛过了
+
+```C++
+class Solution {
+public:
+    int countPrimes(int n) {
+        int cnt = 0;
+        vector<bool> st(n, false);
+
+        for (int i = 2; i < n; i ++ ) { // <n
+            if (st[i]) continue;
+            cnt++;
+            // j 从 i * i 开始筛，因为如果 k < i，那么 k * i 在之前就已经被筛过了
+            for (long j = (long)i * i; j < n; j += i) // 筛掉倍数
+                st[j] = true;
+        }
+        return cnt;
+    }
+};
+```
+
+还有一点可以优化：就像素数判定的优化一样，外层循环中 i 可以只枚举到 sqrt(i)，但是**个数的统计需要单独循环**。
+
+```C++
+class Solution {
+public:
+    int countPrimes(int n) {
+        n -= 1; // 小于n的质数个数，转换为小于等于n-1的质数个数
+        vector<bool> st(n, false);
+
+        for (int i = 2; i <= n / i; i++) { // i*i < n
+            if (st[i]) continue;
+            for (long j = (long)i * i; j <= n; j += i) // 筛掉倍数
+                st[j] = true;
+        }
+
+        int cnt = 0;
+        for (int i = 2; i <= n; i++) // 统计质数个数
+            if(!st[i]) cnt++;
+
+        return cnt;
+    }
+};
+```
+
+
 
 方法2：线性筛法，更适用于求所有素数，而不仅仅是求素数个数
 

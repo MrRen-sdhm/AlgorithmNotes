@@ -991,6 +991,96 @@ public:
 
 
 
+## 4. 锯齿形层次遍历
+
+[Leetcode 103. 二叉树的锯齿形层次遍历](https://leetcode-cn.com/problems/binary-tree-zigzag-level-order-traversal/)
+
+**题解**：
+
+方法1：设置标志位，奇数层翻转结果数组
+
+```C++
+class Solution {
+public:
+    vector<vector<int>> zigzagLevelOrder(TreeNode* root) {
+        vector<vector<int>> res;
+        if(!root) return res;
+        bool flag = false;
+        queue<TreeNode*> qu;
+        qu.push(root);
+
+        while(!qu.empty()) {
+            int cnt = qu.size();
+            vector<int> vec;
+            while(cnt--) {
+                auto t = qu.front(); qu.pop();
+                vec.push_back(t->val);
+                if(t->left) qu.push(t->left);
+                if(t->right) qu.push(t->right);
+            }
+            if(flag) reverse(vec.begin(), vec.end());
+            if(!vec.empty()) res.push_back(vec);
+            flag = !flag;
+        }
+        return res;
+    }
+};
+```
+
+
+
+方法2：使用双端队列
+
+```C++
+class Solution {
+public:
+    // 简单方法，使用deque，为了区分打印顺序，使用deque而不是queue
+    vector<vector<int>> zigzagLevelOrder(TreeNode* pRoot) {
+        vector<vector<int>> res;
+        deque<TreeNode*> nodeDeque;
+        bool zigZag = false; // 左->右
+
+        if(pRoot == nullptr) return res;
+
+        nodeDeque.push_back(pRoot); // 头结点先入队，后续再循环打印
+
+        while(!nodeDeque.empty()) {
+            int cnt = nodeDeque.size();
+            vector<int> vec; // 保存此行的节点
+            while(cnt-- > 0) { // 遍历某层节点的所有子节点
+                if(!zigZag) { // 左->右，前取后放，先存左后存右
+                    pRoot = nodeDeque.front(); // 使用root保存队头，节省一个指针变量
+                    nodeDeque.pop_front(); // 队头出队
+
+                    if(!pRoot) continue; // 此节点为null，不打印，也不添加其子节点
+
+                    nodeDeque.push_back(pRoot->left); // 左子节点，加入队列，即使是null
+                    nodeDeque.push_back(pRoot->right); // 右子节点，加入队列，即使是null
+                } else { // 右->左，后取前放，先存右后存左
+                    pRoot = nodeDeque.back(); // 使用root保存队尾，节省一个指针变量
+                    nodeDeque.pop_back(); // 队尾出队
+
+                    if(!pRoot) continue; // 此节点为null，不打印，也不添加其子节点
+
+                    nodeDeque.push_front(pRoot->right); // 右子节点，加入队列，即使是null
+                    nodeDeque.push_front(pRoot->left); // 左子节点，加入队列，即使是null
+                }
+
+                vec.push_back(pRoot->val); // 打印头结点
+            }
+
+            zigZag = !zigZag; // 切换方向
+
+            if(!vec.empty()) // 此行有节点！！
+                res.push_back(vec); // 打印此行节点
+        }
+        return res;
+    }
+};
+```
+
+
+
 # 前中后序遍历
 
 ```html

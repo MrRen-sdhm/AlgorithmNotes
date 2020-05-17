@@ -314,23 +314,45 @@ Output: [0,0,1,1,2,2]
 
 题目描述：只有 0/1/2 三种颜色。
 
+**题解**：使用双指针，分别指向红色区域的末尾和蓝色区域的开头。
+
+- 当前指针指向0则红色区域末尾指针右移，将0与红色区域末尾指针指向的数字交换，即红色区域扩大一位，然后当前指针向后移；
+- 当前指针指向2则蓝色区域开头指针左移，将2与蓝色区域开头指针指向的元素交换，但蓝色指针指向的数字大小不确定，因而需要再次判断大小，当前指针保持不动；
+- 若当前指针指向1则不作交换，直接指向下一个元素。
+- 循环结束的条件就是当前指针必须在蓝色区域开头指针的左侧。
+
+
+
+写法1：while循环，需要使用一个指针指向当前位置。**从右侧交换过来一个数，则还需判断交换过来这个数的大小，因而交换后curr指针不动**。
+
 ```C++
-public void sortColors(int[] nums) {
-    int zero = -1, one = 0, two = nums.length;
-    while (one < two) {
-        if (nums[one] == 0) {
-            swap(nums, ++zero, one++);
-        } else if (nums[one] == 2) {
-            swap(nums, --two, one);
-        } else {
-            ++one;
+class Solution {
+public:
+    void sortColors(vector<int>& nums) {
+        int l = -1, r = nums.size(), curr = 0;
+        while(curr < r) {
+            if(nums[curr] < 1) swap(nums[++l], nums[curr++]);
+            else if(nums[curr] > 1) swap(nums[--r], nums[curr]);
+            else curr++;
         }
     }
-}
-
-private void swap(int[] nums, int i, int j) {
-    int t = nums[i];
-    nums[i] = nums[j];
-    nums[j] = t;
-}
+};
 ```
+
+
+
+写法2：for循环逐个枚举各个位置，若从右侧交换过来一个数。则还需判断交换过来这个数的大小，因而交换后需要 i--，然后当前循环结束 i 会加1，从而 i 保持不变。
+
+```C++
+class Solution {
+public:
+    void sortColors(vector<int>& nums) {
+        int l = -1, r = nums.size();
+        for(int i = 0; i < r; i++) {
+            if(nums[i] < 1) swap(nums[++l], nums[i]);
+            else if(nums[i] > 1) swap(nums[--r], nums[i--]);
+        }
+    }
+};
+```
+
