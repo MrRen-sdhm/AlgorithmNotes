@@ -1565,44 +1565,352 @@ public int combinationSum4(int[] nums, int target) {
 
 # 股票交易
 
-## 1. 需要冷却期的股票交易
+## 1. 只能进行1次的股票交易
 
-309\. Best Time to Buy and Sell Stock with Cooldown(Medium)
+121\. Best Time to Buy and Sell Stock / 买卖股票的最佳时机 (Easy)
+
+[Leetcode](https://leetcode.com/problems/best-time-to-buy-and-sell-stock/) / [力扣](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock/)
+
+```
+输入: [7,1,5,3,6,4]
+输出: 5
+解释: 在第 2 天（股票价格 = 1）的时候买入，在第 5 天（股票价格 = 6）的时候卖出，最大利润 = 6-1 = 5 。
+```
+
+**题解**：
+
+方法1：暴力
+
+找出给定数组中两个数字之间的最大差值（即，最大利润）。此外，第二个数字（卖出价格）必须大于第一个数字（买入价格）。对于每组 i 和 j（其中 j > i）我们需要找出 max(prices[j] - prices[i])。
+
+```C++
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        int n = prices.size();
+        int res = 0;
+        for(int i = 0; i < n; i++) {
+            for(int j = 0; j < i; j++) {
+                res = max(res, prices[i] - prices[j]);
+        }
+        return res;
+    }
+};
+```
+
+
+
+方法2：贪心
+
+在题目中，我们只要用一个变量记录一个历史最低价格 minprice，我们就可以假设自己的股票是在那天买的。那么我们在第 i 天卖出股票能得到的利润就是 prices[i] - minprice。
+
+<img src="https://pic.leetcode-cn.com/cc4ef55d97cfef6f9215285c7573027c4b265c31101dd54e8555a7021c95c927-file_1555699418271" alt="Profit Graph" style="zoom:67%;" />
+
+```C++
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        int n = prices.size();
+        int res = 0, minval = INT_MAX;
+        for(int i = 0; i < n; i++) {
+            minval = min(minval, prices[i]);
+            res = max(res, prices[i] - minval);
+        }
+        return res;
+    }
+};
+```
+
+
+
+方法3：DP
+
+**状态表示**
+
+状态 `dp[i][j]` 表示：在索引为 i 的这一天，用户手上持股状态为 j 所获得的最大利润。
+
+说明：
+
+- j 只有 2 个值：0 表示不持股（特指卖出股票以后的不持股状态），1 表示持股。
+- “用户手上不持股”不代表用户一定在索引为 i 的这一天把股票抛售了；
+
+**状态转移**
+
+1、`dp[i][0]` 怎样转移？
+
+`dp[i - 1][0]` ：当然可以从昨天不持股转移过来，表示从昨天到今天什么都不操作，这一点是显然的；
+
+`dp[i - 1][1] + prices[i]`：昨天持股，就在索引为 i 的这一天，我卖出了股票，状态由 1 变成了 0，此时卖出股票，因此加上这一天的股价。
+
+综上：`dp[i][0] = max(dp[i - 1][0], dp[i - 1][1] + prices[i]);`
+
+2、`dp[i][1]` 怎样转移？
+
+`dp[i - 1][1]` ：昨天持股，今天什么都不操作，当然可以从昨天持股转移过来，这一点是显然的；
+
+`-prices[i]`：注意：状态 1 不能由状态 0 来，因为事实上，状态 0 特指：“卖出股票以后不持有股票的状态”，请注意这个状态和“没有进行过任何一次交易的不持有股票的状态”的区别。
+
+因此，-prices[i] 就表示，在索引为 i 的这一天，执行买入操作得到的收益。注意：因为题目只允许一次交易，因此不能加上 `dp[i - 1][0]`。
+
+综上：`dp[i][1] = max(dp[i - 1][1], -prices[i]);`
+
+**base case**
+
+- 第 0 天不持股，显然 `dp[0][0] = 0`；
+- 第 0 天持股，显然`dp[0][1] = -prices[0]`。
+
+**返回值**
+
+最后返回`dp[n - 1][1]`， [1] 代表手上还持有股票，[0] 表示手上的股票已经卖出去了，很显然后者得到的利润一定大于前者。
+
+```C++
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        int n = prices.size();
+        if(n == 0) return 0;
+        vector<vector<int>> dp(n, vector<int>(2, 0));
+
+        dp[0][0] = 0;
+        dp[0][1] = -prices[0];
+        for(int i = 1; i < n; i++) {
+            dp[i][0] = max(dp[i-1][0], dp[i-1][1] + prices[i]);
+            dp[i][1] = max(dp[i-1][1], -prices[i]);
+        }
+        return dp[n-1][0]; // 最后不持股一定获得最大收益
+    }
+};
+```
+
+
+
+空间优化
+
+```C++
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        int n = prices.size();
+        if(n == 0) return 0;
+        vector<int> dp(2, 0);
+
+        dp[0] = 0;
+        dp[1] = -prices[0];
+        for(int i = 1; i < n; i++) {
+            dp[0] = max(dp[0], dp[1] + prices[i]);
+            dp[1] = max(dp[1], -prices[i]);
+        }
+        return dp[0]; // 最后不持股一定获得最大收益
+    }
+};
+```
+
+
+
+## 2. 可以进行任意次的股票交易
+
+122\. Best Time to Buy and Sell Stock / 买卖股票的最佳时机 II (Easy)
+
+[Leetcode](https://leetcode.com/problems/best-time-to-buy-and-sell-stock-ii/) / [力扣](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-ii/)
+
+```
+输入: [7,1,5,3,6,4]
+输出: 7
+解释: 在第 2 天（股票价格 = 1）的时候买入，在第 3 天（股票价格 = 5）的时候卖出, 这笔交易所能获得利润 = 5-1 = 4 。
+```
+
+**题解**：
+
+相比上题`dp[i][1]`的状态转移发生变化，由于可以进行任意次交易，状态1可以由状态0转移而来，即卖出股票后不持有股票时，可以再次购入股票。`dp[i][1] = max(dp[i-1][1], dp[i-1][0] - prices[i]);`
+
+```C++
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        int n = prices.size();
+        if(n == 0) return 0;
+        vector<vector<int>> dp(n, vector<int>(2, 0));
+
+        dp[0][0] = 0;
+        dp[0][1] = -prices[0];
+        for(int i = 1; i < n; i++) {
+            dp[i][0] = max(dp[i-1][0], dp[i-1][1] + prices[i]);
+            dp[i][1] = max(dp[i-1][1], dp[i-1][0] - prices[i]);
+        }
+        return dp[n-1][0]; // 最后不持股一定获得最大收益
+    }
+};
+```
+
+
+
+空间优化
+
+当前行的值仅与前一行左侧或右侧的值有关，即新状态只和之前相邻的一个状态有关
+
+```C++
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        int n = prices.size();
+        if(n == 0) return 0;
+        
+        vector<int> dp = {0， -prices[0]};
+        for(int i = 1; i < n; i++) {
+            dp[0] = max(dp[0], dp[1] + prices[i]);
+            dp[1] = max(dp[1], dp[0] - prices[i]);
+        }
+        return dp[0]; // 最后不持股一定获得最大收益
+    }
+};
+```
+
+
+
+## 3. 任意次但有冷却期的股票交易
+
+309\. Best Time to Buy and Sell Stock with Cooldown / 最佳买卖股票时机含冷冻期 (Medium)
 
 [Leetcode](https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/description/) / [力扣](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/description/)
 
 题目描述：交易之后需要有一天的冷却时间。
 
+**题解**：
 
-该题为马尔可夫过程，分为A观望，B持股，C冷却三个状态
-状态转移图：A-(观望)->A, A-(买入｜-price)->B, B-(观望)->B, B-(卖出|+price)->C, C-(冷却)->A
-可用维特比算法求解
+方法1：DP
 
-```java
-public int maxProfit(int[] prices) {
-    if (prices == null || prices.length == 0) {
-        return 0;
+第 i 天选择购入股票的时候，要从 i-2 的状态转移，而不是 i-1 。即`dp[i][1] = max(dp[i-1][1], dp[i-2][0] - prices[i]);`
+
+需要注意的一点是，i = 1时需要对上面的转移方程进行处理，`dp[-1][0]`表示的是，还没有开始，并且还没有购入股票，此时的收益必然是0。即`dp[1][1] = max(dp[0][1], dp[-1][0] - prices[1]) = max(dp[0][1], 0 - prices[1]) = max(dp[0][1], -prices[1])  `
+
+```C++
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        int n = prices.size();
+        if(n == 0) return 0;
+        vector<vector<int>> dp(n, vector<int>(2, 0));
+
+        dp[0][0] = 0;
+        dp[0][1] = -prices[0];
+        for(int i = 1; i < n; i++) {
+            dp[i][0] = max(dp[i-1][0], dp[i-1][1] + prices[i]);
+            
+            // i=1时，dp[i-2][0]=dp[-1][0]，i=-1 意味着还没有开始，这时候的利润当然是 0
+            // 即dp[1][1] = max(dp[0][1], dp[-1][0] - prices[1]) = max(dp[0][1], 0 - prices[1])
+            if(i < 2) dp[i][1] = max(dp[i-1][1], -prices[i]);
+            else dp[i][1] = max(dp[i-1][1], dp[i-2][0] - prices[i]);
+        }
+        return dp[n-1][0]; // 最后不持股一定获得最大收益
     }
-    int N = prices.length;
-    int[] A = new int[N];
-    int[] B = new int[N];
-    int[] C = new int[N];
-    A[0] = 0;
-    B[0] = C[0] = -prices[0];
-    for (int i = 1; i < N; i++) {
-        A[i] = Math.max(A[i - 1], C[i - 1]);
-        B[i] = Math.max(B[i - 1], A[i - 1] - prices[i]);
-        C[i] = B[i - 1] + prices[i];
+};
+```
+
+空间优化
+
+因为当前状态仅与前一状态及前前一状态有关，可以使用三个变量来表示dp数组。dp[0]表示不持有股票，其初始值为0，即买卖没开始时未购入股票的最大收益为0；dp[1]表示持有股票，其初始值为负无穷，表示买卖还没开始时不可能持有股票。
+
+- 注意：状态转移方程中，当前行不仅与其上一行左侧的元素有关，还与上一行右侧的元素有关，因而不能简单地像背包问题一样，将第一维删除。
+
+```C++
+// 过渡写法
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        int n = prices.size();
+        if(n == 0) return 0;
+        vector<int> dp(2, 0);
+
+        dp[0] = 0;
+        dp[1] = -prices[0];
+        int pre = 0;
+        for(int i = 1; i < n; i++) {
+            int tmp = dp[0];
+            dp[0] = max(dp[0], dp[1] + prices[i]);
+            dp[1] = max(dp[1], pre - prices[i]);
+            pre = tmp;
+        }
+        return dp[0]; // 最后不持股一定获得最大收益
     }
-    return Math.max(A[N - 1], C[N - 1]);
-}
+};
+
+// 化简
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        int n = prices.size();
+        if(n == 0) return 0;
+        
+        vector<int> dp = {0, INT_MIN, 0}; // dp[2]代表dp[i-2][0]
+        for(int i = 0; i < n; i++) {
+            int tmp = dp[0]; // 保存前一状态
+            dp[0] = max(dp[0], dp[1] + prices[i]);
+            dp[1] = max(dp[1], dp[2] - prices[i]);
+            dp[2] = tmp; // 更新前一状态
+        }
+        return dp[0]; // 最后不持股一定获得最大收益
+    }
+};
 ```
 
 
 
-## 2. 需要交易费用的股票交易
+方法2：DP，设置三种股票的操作状态
 
-714\. Best Time to Buy and Sell Stock with Transaction Fee (Medium)
+该题为马尔可夫过程，分为A观望，B持股，C冷却三个状态
+状态转移图：A-(观望)->A, A-(买入｜-price)->B, B-(观望)->B, B-(卖出|+price)->C, C-(冷却)->A
+
+<img src="https://pic.leetcode-cn.com/6dba5214e21684d0383521aaf820b66191106473b9e8a07faaa394e5136b5f47-image.png" alt="image.png" style="zoom: 33%;" />
+
+```C++
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        int n = prices.size();
+        if(n == 0) return 0;
+        vector<vector<int>> dp(n, vector<int>(3, 0));
+
+        dp[0][0] = 0;
+        dp[0][1] = -prices[0];
+        dp[0][2] = 0;
+        for(int i = 1; i < n; i++) {
+            dp[i][0] = max(dp[i-1][0], dp[i-1][1] + prices[i]);
+            dp[i][1] = max(dp[i-1][1], dp[i-1][2] - prices[i]);
+            dp[i][2] = dp[i-1][0];
+        }
+        return max(dp[n-1][0], dp[n-1][2]); // 最后不持股或处于冷冻期均可能获得最大收益
+    }
+};
+```
+
+空间优化
+
+新状态`dp[i][0]`及`dp[i][1]`与之前的相邻状态有关，`dp[i][2]`与前前一状态有关，需要使用一个变量单独保存前前一状态。此时可以看出，此方法化简后和前面的方法1如出一辙。
+
+```C++
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        int n = prices.size();
+        if(n == 0) return 0;
+        
+        vector<int> dp = {0, -prices[0], 0};
+        for(int i = 1; i < n; i++) {
+            int tmp = dp[0];
+            dp[0] = max(dp[0], dp[1] + prices[i]);
+            dp[1] = max(dp[1], dp[2] - prices[i]);
+            dp[2] = tmp;
+        }
+        return max(dp[0], dp[2]); // 最后不持股或处于冷冻期均可能获得最大收益
+    }
+};
+```
+
+
+
+## 4. 任意次但有交易费用的股票交易
+
+714\. Best Time to Buy and Sell Stock with Transaction Fee / 买卖股票的最佳时机含手续费 (Medium)
 
 [Leetcode](https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-transaction-fee/description/) / [力扣](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-with-transaction-fee/description/)
 
@@ -1619,30 +1927,60 @@ The total profit is ((8 - 1) - 2) + ((9 - 4) - 2) = 8.
 
 题目描述：每交易一次，都要支付一定的费用。
 
-
 分为A观望，B持股，两个状态
 状态转移图：A-(观望)->A, A-(买入|-price)->B, B-(观望)->B, B-(卖出|+price|-fee)->A
 
-```java
-public int maxProfit(int[] prices, int fee) {
-    int N = prices.length;
-    int[] A = new int[N];
-    int[] B = new int[N];
-    A[0] = 0;
-    B[0] = -prices[0];
-    for (int i = 1; i < N; i++) {
-        A[i] = Math.max(A[i - 1], B[i - 1] + prices[i] -fee);
-        B[i] = Math.max(A[i - 1] - prices[i], B[i - 1]);
+**题解**：
+
+方法1：DP
+
+每次交易要支付手续费，只要把手续费从利润中减去即可。在购入股票时减去费用即可。
+
+```
+class Solution {
+public:
+    int maxProfit(vector<int>& prices, int fee) {
+        int n = prices.size();
+        if(n == 0) return 0;
+        vector<vector<int>> dp(n, vector<int>(2, 0));
+
+        dp[0][0] = 0;
+        dp[0][1] = -prices[0] - fee;
+        for(int i = 1; i < n; i++) {
+            dp[i][0] = max(dp[i-1][0], dp[i-1][1] + prices[i]);
+            dp[i][1] = max(dp[i-1][1], dp[i-1][0] - prices[i] - fee);
+        }
+        return dp[n-1][0]; // 最后不持股一定获得最大收益
     }
-    return A[N - 1];
-}
+};
+```
+
+
+
+```C++
+class Solution {
+public:
+    int maxProfit(vector<int>& prices, int fee) {
+        int n = prices.size();
+        if(n == 0) return 0;
+        vector<int> dp(2, 0);
+
+        dp[0] = 0;
+        dp[1] = -prices[0] - fee; // 也可设为INT_MIN
+        for(int i = 1; i < n; i++) {
+            dp[0] = max(dp[0], dp[1] + prices[i]);
+            dp[1] = max(dp[1], dp[0] - prices[i] - fee);
+        }
+        return dp[0]; // 最后不持股一定获得最大收益
+    }
+};
 ```
 
 
 
 ## 3. 只能进行两次的股票交易
 
-123\. Best Time to Buy and Sell Stock III (Hard)
+123\. Best Time to Buy and Sell Stock III / 买卖股票的最佳时机 III (Hard)
 
 [Leetcode](https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iii/description/) / [力扣](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-iii/description/)
 
@@ -1672,7 +2010,7 @@ public int maxProfit(int[] prices) {
 
 ## 4. 只能进行 k 次的股票交易
 
-188\. Best Time to Buy and Sell Stock IV (Hard)
+188\. Best Time to Buy and Sell Stock IV / 买卖股票的最佳时机 IV (Hard)
 
 [Leetcode](https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iv/description/) / [力扣](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-iv/description/)
 
