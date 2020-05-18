@@ -20,12 +20,11 @@
 
 考虑到 dp[i] 只与 dp[i - 1] 和 dp[i - 2] 有关，因此可以只用两个变量来存储 dp[i - 1] 和 dp[i - 2]，使得原来的 O(N) 空间复杂度优化为 O(1) 复杂度。
 
-```java
+```C++
 class Solution {
 public:
     int climbStairs(int n) {
-        if(n <= 2)
-            return n;
+        if(n <= 2) return n;
 
         int pre2 = 1, pre1 = 2, sum; // 从1开始
         for(int i = 3; i <= n; ++i) {
@@ -55,7 +54,7 @@ public:
 <div align="center"> <img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/2de794ca-aa7b-48f3-a556-a0e2708cb976.jpg" width="350px"> </div><br>
 选择 dp[–1] = dp[0] = 0 为初始情况，可简化代码。
 
-```java
+```C++
 class Solution {
 public:
     int rob(vector<int>& nums) {
@@ -86,7 +85,7 @@ public:
 2、在不偷窃最后一个房子的情况下（即 nums[:n-1]），最大金额是 p2
 综合偷窃最大金额： 为以上两种情况的较大值，即 max(p1,p2)。
 
-```java
+```C++
 class Solution {
 public:
     int rob(vector<int>& nums) {
@@ -1565,6 +1564,96 @@ public int combinationSum4(int[] nums, int target) {
 
 # 股票交易
 
+第一题是只进行一次交易，相当于 k = 1；第二题是不限交易次数，相当于 k = +infinity（正无穷）；第三题是只进行 2 次交易，相当于 k = 2；剩下两道也是不限次数，但是加了交易「冷冻期」和「手续费」的额外条件，其实就是第二题的变种。
+
+**1、穷举框架**
+
+具体到每一天，看看总共有几种可能的「状态」，再找出每个「状态」对应的「选择」。我们要穷举所有「状态」，穷举的目的是根据对应的「选择」更新状态。
+
+```C++
+for 状态1 in 状态1的所有取值：
+    for 状态2 in 状态2的所有取值：
+        for ...
+            dp[状态1][状态2][...] = 择优(选择1，选择2...)
+```
+
+**每天都有三种「选择」**：**买入、卖出、无操作**，我们用 buy, sell, rest 表示这三种选择。但问题是，并不是每天都可以任意选择这三种选择的，因为 sell 必须在 buy 之后，buy 必须在 sell 之后。那么 rest 操作还应该分两种状态，一种是 buy 之后的 rest（持有了股票），一种是 sell 之后的 rest（没有持有股票）。而且别忘了，我们还有交易次数 k 的限制，就是说你 buy 还只能在 k > 0 的前提下操作。
+
+**「状态」有三个**，**第一个是天数，第二个是允许交易的最大次数，第三个是当前的持有状态**（即之前说的 rest 的状态，我们不妨用 1 表示持有，0 表示没有持有）。然后我们用一个三维数组就可以装下这几种状态的全部组合：
+
+```C++
+dp[i][k][0 or 1]
+0 <= i <= n-1, 1 <= k <= K
+n 为天数，大 K 为最多交易数
+此问题共 n × K × 2 种状态，全部穷举就能搞定。
+
+for 0 <= i < n:
+    for 1 <= k <= K:
+        for s in {0, 1}:
+            dp[i][k][s] = max(buy, sell, rest)
+```
+
+而且我们可以用自然语言描述出每一个状态的含义，比如说 `dp[3][2][1]` 的含义就是：今天是第三天，我现在手上持有着股票，至今最多进行 2 次交易时的最大收益。再比如 `dp[2][3][0]` 的含义：今天是第二天，我现在手上没有持有股票，至今最多进行 3 次交易时的最大收益。
+
+最终答案是 `dp[n - 1][K][0]`，即最后一天，最多允许 K 次交易，最多获得多少利润。为什么不是 `dp[n - 1][K][1]`？因为 [1] 代表手上还持有股票，**[0] 表示手上的股票已经卖出去了，显然后者得到的利润一定大于前者**。
+
+**2、状态转移框架**
+
+每种「状态」有哪些「选择」，应该如何更新「状态」。只看「持有状态」，可以画个状态转移图：
+
+<img src="https://gitee.com//MrRen-sdhm/Images/raw/master/img/20200518153906.png?alt=media" alt="img" style="zoom:67%;" />
+
+通过这个图可以很清楚地看到，每种状态（0 和 1）是如何转移而来的。根据这个图，可以写出**状态转移方程**：
+
+```C++
+dp[i][k][0] = max(dp[i-1][k][0], dp[i-1][k][1] + prices[i])
+              max(   选择 rest  ,             选择 sell      )
+
+解释：今天我没有持有股票，有两种可能：
+要么是我昨天就没有持有，然后今天选择 rest，所以我今天还是没有持有；
+要么是我昨天持有股票，但是今天我 sell 了，所以我今天没有持有股票了。
+
+dp[i][k][1] = max(dp[i-1][k][1], dp[i-1][k-1][0] - prices[i])
+              max(   选择 rest  ,           选择 buy         )
+
+解释：今天我持有着股票，有两种可能：
+要么我昨天就持有着股票，然后今天选择 rest，所以我今天还持有着股票；
+要么我昨天本没有持有，但今天我选择 buy，所以今天我就持有股票了。
+```
+
+- **如果 buy，就要从利润中减去 prices[i]，如果 sell，就要给利润增加 prices[i]**。今天的最大利润就是这两种可能选择中较大的那个。
+
+- 而且注意 k 的限制，我们**在选择 buy 的时候，把 k 减小 1**，很好理解吧，当然你也可以在 sell 的时候减 1，一样的。
+
+**base case的定义**：
+
+```C++
+dp[-1][k][0] = 0
+解释：因为 i 是从 0 开始的，所以 i = -1 意味着还没有开始，这时候的利润当然是 0 。
+dp[-1][k][1] = -infinity
+解释：还没开始的时候，是不可能持有股票的，用负无穷表示这种不可能。
+dp[i][0][0] = 0
+解释：因为 k 是从 1 开始的，所以 k = 0 意味着根本不允许交易，这时候利润当然是 0 。
+dp[i][0][1] = -infinity
+解释：不允许交易的情况下，是不可能持有股票的，用负无穷表示这种不可能。
+```
+
+**总结**：
+
+```
+base case：
+dp[-1][k][0] = dp[i][0][0] = 0
+dp[-1][k][1] = dp[i][0][1] = -infinity
+
+状态转移方程：
+dp[i][k][0] = max(dp[i-1][k][0], dp[i-1][k][1] + prices[i])
+dp[i][k][1] = max(dp[i-1][k][1], dp[i-1][k-1][0] - prices[i])
+```
+
+> [股票交易问题DP算法框架](https://labuladong.gitbook.io/algo/dong-tai-gui-hua-xi-lie/tuan-mie-gu-piao-wen-ti)
+
+
+
 ## 1. 只能进行1次的股票交易
 
 121\. Best Time to Buy and Sell Stock / 买卖股票的最佳时机 (Easy)
@@ -1648,9 +1737,9 @@ public:
 
 `dp[i - 1][1]` ：昨天持股，今天什么都不操作，当然可以从昨天持股转移过来，这一点是显然的；
 
-`-prices[i]`：注意：状态 1 不能由状态 0 来，因为事实上，状态 0 特指：“卖出股票以后不持有股票的状态”，请注意这个状态和“没有进行过任何一次交易的不持有股票的状态”的区别。
+`-prices[i]`：注意：**状态 1 不能由状态 0 来，因为事实上，状态 0 特指：“卖出股票以后不持有股票的状态”，请注意这个状态和“没有进行过任何一次交易的不持有股票的状态”的区别**。
 
-因此，-prices[i] 就表示，在索引为 i 的这一天，执行买入操作得到的收益。注意：因为题目只允许一次交易，因此不能加上 `dp[i - 1][0]`。
+因此，-prices[i] 就表示，在索引为 i 的这一天，执行买入操作得到的收益。注意：**因为题目只允许一次交易，因此不能加上 `dp[i - 1][0]`**。
 
 综上：`dp[i][1] = max(dp[i - 1][1], -prices[i]);`
 
@@ -1662,6 +1751,24 @@ public:
 **返回值**
 
 最后返回`dp[n - 1][1]`， [1] 代表手上还持有股票，[0] 表示手上的股票已经卖出去了，很显然后者得到的利润一定大于前者。
+
+
+
+**这里也可以直接套用框架**：
+
+```C++
+dp[i][1][0] = max(dp[i-1][1][0], dp[i-1][1][1] + prices[i]) // k = 1
+dp[i][1][1] = max(dp[i-1][1][1], dp[i-1][0][0] - prices[i]) // k = 1
+            = max(dp[i-1][1][1], -prices[i])
+解释：k = 0 的 base case，所以 dp[i-1][0][0] = 0。
+
+现在发现 k 都是 1，不会改变，即 k 对状态转移已经没有影响了。
+可以进行进一步化简去掉所有 k：
+dp[i][0] = max(dp[i-1][0], dp[i-1][1] + prices[i])
+dp[i][1] = max(dp[i-1][1], -prices[i])
+```
+
+
 
 ```C++
 class Solution {
@@ -1685,6 +1792,8 @@ public:
 
 
 空间优化
+
+可以发现，`dp[i][0]`与`dp[i-1][0]`及`dp[i-1][1]`有关，而`dp[i][1]`仅与`dp[i-1][1]`有关，即更新`dp[i][0]`需要上一行的当前位置和右侧位置，更新`dp[i][1]`需要上一行的当前位置。若仅适用2个变量来存储两列的数据，也是可行的，当更新第一列数据时用到之前的两列数据，第一列数据被修改；而更新第二列数据时正好不需要第一列数据，即之前更新第一列数据不会对第二列的数据更新产生影响。因而使用两个变量来存储状态是可行的，即省略dp数组的第一维是可行的。
 
 ```C++
 class Solution {
@@ -1722,6 +1831,22 @@ public:
 **题解**：
 
 相比上题`dp[i][1]`的状态转移发生变化，由于可以进行任意次交易，状态1可以由状态0转移而来，即卖出股票后不持有股票时，可以再次购入股票。`dp[i][1] = max(dp[i-1][1], dp[i-1][0] - prices[i]);`
+
+
+
+如果 k 为正无穷，那么就可以认为 k 和 k - 1 是一样的。可以这样改写框架：
+
+```C++
+dp[i][k][0] = max(dp[i-1][k][0], dp[i-1][k][1] + prices[i])
+dp[i][k][1] = max(dp[i-1][k][1], dp[i-1][k-1][0] - prices[i])
+            = max(dp[i-1][k][1], dp[i-1][k][0] - prices[i]) // k = k-1
+
+我们发现数组中的 k 已经不会改变了，也就是说不需要记录 k 这个状态了：
+dp[i][0] = max(dp[i-1][0], dp[i-1][1] + prices[i])
+dp[i][1] = max(dp[i-1][1], dp[i-1][0] - prices[i])
+```
+
+
 
 ```C++
 class Solution {
@@ -1783,6 +1908,18 @@ public:
 
 需要注意的一点是，i = 1时需要对上面的转移方程进行处理，`dp[-1][0]`表示的是，还没有开始，并且还没有购入股票，此时的收益必然是0。即`dp[1][1] = max(dp[0][1], dp[-1][0] - prices[1]) = max(dp[0][1], 0 - prices[1]) = max(dp[0][1], -prices[1])  `
 
+
+
+在上一题状态转移方程的基础上进行修改：
+
+```C++
+dp[i][0] = max(dp[i-1][0], dp[i-1][1] + prices[i])
+dp[i][1] = max(dp[i-1][1], dp[i-2][0] - prices[i])
+解释：第 i 天选择 buy 的时候，要从 i-2 的状态转移，而不是 i-1 。
+```
+
+
+
 ```C++
 class Solution {
 public:
@@ -1806,11 +1943,13 @@ public:
 };
 ```
 
+
+
 空间优化
 
 因为当前状态仅与前一状态及前前一状态有关，可以使用三个变量来表示dp数组。dp[0]表示不持有股票，其初始值为0，即买卖没开始时未购入股票的最大收益为0；dp[1]表示持有股票，其初始值为负无穷，表示买卖还没开始时不可能持有股票。
 
-- 注意：状态转移方程中，当前行不仅与其上一行左侧的元素有关，还与上一行右侧的元素有关，因而不能简单地像背包问题一样，将第一维删除。
+相比上一题的空间优化，计算当前行右侧的数据需要获取上上一行左侧的数据，需要增加一个变量来存储。
 
 ```C++
 // 过渡写法
@@ -1843,10 +1982,10 @@ public:
         
         vector<int> dp = {0, INT_MIN, 0}; // dp[2]代表dp[i-2][0]
         for(int i = 0; i < n; i++) {
-            int tmp = dp[0]; // 保存前一状态
+            int tmp = dp[0]; // 保存dp[0]的前一状态
             dp[0] = max(dp[0], dp[1] + prices[i]);
             dp[1] = max(dp[1], dp[2] - prices[i]);
-            dp[2] = tmp; // 更新前一状态
+            dp[2] = tmp; // 保存dp[0]前前状态
         }
         return dp[0]; // 最后不持股一定获得最大收益
     }
@@ -1855,10 +1994,7 @@ public:
 
 
 
-方法2：DP，设置三种股票的操作状态
-
-该题为马尔可夫过程，分为A观望，B持股，C冷却三个状态
-状态转移图：A-(观望)->A, A-(买入｜-price)->B, B-(观望)->B, B-(卖出|+price)->C, C-(冷却)->A
+方法2：DP，设置三种股票的持有状态
 
 <img src="https://pic.leetcode-cn.com/6dba5214e21684d0383521aaf820b66191106473b9e8a07faaa394e5136b5f47-image.png" alt="image.png" style="zoom: 33%;" />
 
@@ -1936,7 +2072,16 @@ The total profit is ((8 - 1) - 2) + ((9 - 4) - 2) = 8.
 
 每次交易要支付手续费，只要把手续费从利润中减去即可。在购入股票时减去费用即可。
 
+```C++
+dp[i][0] = max(dp[i-1][0], dp[i-1][1] + prices[i])
+dp[i][1] = max(dp[i-1][1], dp[i-1][0] - prices[i] - fee)
+解释：相当于买入股票的价格升高了。
+在第一个式子里减也是一样的，相当于卖出股票的价格减小了。
 ```
+
+
+
+```C++
 class Solution {
 public:
     int maxProfit(vector<int>& prices, int fee) {
@@ -1956,6 +2101,8 @@ public:
 ```
 
 
+
+空间优化
 
 ```C++
 class Solution {
@@ -1984,26 +2131,47 @@ public:
 
 [Leetcode](https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iii/description/) / [力扣](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-iii/description/)
 
-```java
-public int maxProfit(int[] prices) {
-    int firstBuy = Integer.MIN_VALUE, firstSell = 0;
-    int secondBuy = Integer.MIN_VALUE, secondSell = 0;
-    for (int curPrice : prices) {
-        if (firstBuy < -curPrice) {
-            firstBuy = -curPrice;
+**题解**：
+
+套用模板
+
+```C++
+base case：
+dp[-1][k][0] = dp[i][0][0] = 0
+dp[-1][k][1] = dp[i][0][1] = -infinity
+
+状态转移方程：
+dp[i][k][0] = max(dp[i-1][k][0], dp[i-1][k][1] + prices[i])
+dp[i][k][1] = max(dp[i-1][k][1], dp[i-1][k-1][0] - prices[i])
+```
+
+需要对k = 0的特殊情况进行处理，k = 0时`dp[i][k][1] = max(dp[i-1][k][1], dp[i-1][k-1][0] - prices[i]) = max(dp[i-1][0][1], dp[i-1][-1][0] - prices[i])`，由base case可知`dp[i-1][-1][0] = 0`，即未开始买卖，不持股的收益为0，从而`dp[i][k][1] = max(dp[i-1][k][1], -prices[i])`
+
+i = 0的base case 此时有四个，可根据状态转移方程推导得到
+
+```C++
+class Solution {
+public:
+    int maxProfit(vector<int>& prices) {
+        const int n = prices.size();
+        if(n == 0) return 0;
+
+        int dp[n][2][2]; // vector<vector<vector<int>>> dp(n, vector<vector<int>>(2, vector<int>(2, 0)));
+
+        dp[0][0][0] = 0;
+        dp[0][0][1] = -prices[0];
+        dp[0][1][0] = 0;
+        dp[0][1][1] = -prices[0];
+        for(int i = 1; i < n; i++) {
+            for(int k = 0; k < 2; k++) {
+                dp[i][k][0] = max(dp[i-1][k][0], dp[i-1][k][1] + prices[i]);
+                if(k == 0) dp[i][k][1] = max(dp[i-1][k][1], -prices[i]); // 处理k=0
+                else dp[i][k][1] = max(dp[i-1][k][1], dp[i-1][k-1][0] - prices[i]);
+            }
         }
-        if (firstSell < firstBuy + curPrice) {
-            firstSell = firstBuy + curPrice;
-        }
-        if (secondBuy < firstSell - curPrice) {
-            secondBuy = firstSell - curPrice;
-        }
-        if (secondSell < secondBuy + curPrice) {
-            secondSell = secondBuy + curPrice;
-        }
+        return dp[n-1][1][0]; // 最后不持股一定获得最大收益
     }
-    return secondSell;
-}
+};
 ```
 
 
@@ -2014,28 +2182,82 @@ public int maxProfit(int[] prices) {
 
 [Leetcode](https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iv/description/) / [力扣](https://leetcode-cn.com/problems/best-time-to-buy-and-sell-stock-iv/description/)
 
+**题解**：
+
+base case是当i = 0时`dp[0][k][0] = 0 | dp[0][k][1] = -prices[0] (k = 0~INF)`，可根据状态转移方程求得
+
+修改上题代码的k值范围，可得下面的代码：
+
 ```java
-public int maxProfit(int k, int[] prices) {
-    int n = prices.length;
-    if (k >= n / 2) {   // 这种情况下该问题退化为普通的股票交易问题
-        int maxProfit = 0;
-        for (int i = 1; i < n; i++) {
-            if (prices[i] > prices[i - 1]) {
-                maxProfit += prices[i] - prices[i - 1];
+class Solution {
+public:
+    int maxProfit(int k, vector<int>& prices) {
+        const int n = prices.size();
+        if(n == 0 || k == 0) return 0;
+
+        int dp[n][k][2];
+
+        for(int i = 0; i < k; i++) {
+            dp[0][i][0] = 0;
+            dp[0][i][1] = -prices[0];
+        }
+
+        for(int i = 1; i < n; i++) {
+            for(int j = 0; j < k; j++) {
+                dp[i][j][0] = max(dp[i-1][j][0], dp[i-1][j][1] + prices[i]);
+                if(j == 0) dp[i][j][1] = max(dp[i-1][j][1], -prices[i]);
+                else dp[i][j][1] = max(dp[i-1][j][1], dp[i-1][j-1][0] - prices[i]);
             }
         }
-        return maxProfit;
+        return dp[n-1][k-1][0]; // 最后不持股一定获得最大收益
     }
-    int[][] maxProfit = new int[k + 1][n];
-    for (int i = 1; i <= k; i++) {
-        int localMax = maxProfit[i - 1][0] - prices[0];
-        for (int j = 1; j < n; j++) {
-            maxProfit[i][j] = Math.max(maxProfit[i][j - 1], prices[j] + localMax);
-            localMax = Math.max(localMax, maxProfit[i - 1][j] - prices[j]);
+};
+```
+
+
+
+上面的代码会有超内存的错误，因为传入的 k 值会非常大（1000000000），导致dp 数组太大了。
+
+一次交易由买入和卖出构成，至少需要两天。所以说有效的限制 k 应该不超过 n/2，如果超过，就没有约束作用了，相当于 k = +infinity。这种情况是之前解决过的。
+
+修改代码如下：
+
+```C++
+class Solution {
+public:
+    int maxProfit(int k, vector<int>& prices) {
+        const int n = prices.size();
+        if(n == 0 || k == 0) return 0;
+
+        if(k > n / 2) { // 相当于不限制次数
+            int dp[n][2];
+
+            dp[0][0] = 0;
+            dp[0][1] = -prices[0];
+            for(int i = 1; i < n; i++) {
+                dp[i][0] = max(dp[i-1][0], dp[i-1][1] + prices[i]);
+                dp[i][1] = max(dp[i-1][1], dp[i-1][0] - prices[i]);
+            }
+            return dp[n-1][0]; // 最后不持股一定获得最大收益
         }
+
+        int dp[n][k][2];
+
+        for(int i = 0; i < k; i++) {
+            dp[0][i][0] = 0;
+            dp[0][i][1] = -prices[0];
+        }
+
+        for(int i = 1; i < n; i++) {
+            for(int j = 0; j < k; j++) {
+                dp[i][j][0] = max(dp[i-1][j][0], dp[i-1][j][1] + prices[i]);
+                if(j == 0) dp[i][j][1] = max(dp[i-1][j][1], -prices[i]);
+                else dp[i][j][1] = max(dp[i-1][j][1], dp[i-1][j-1][0] - prices[i]);
+            }
+        }
+        return dp[n-1][k-1][0]; // 最后不持股一定获得最大收益
     }
-    return maxProfit[k][n - 1];
-}
+};
 ```
 
 
