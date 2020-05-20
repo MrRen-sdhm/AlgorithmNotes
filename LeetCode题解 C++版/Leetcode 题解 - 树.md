@@ -1356,7 +1356,7 @@ public:
 
 
 
-# BST
+# BST✏️
 
 二叉查找树（BST）：根节点大于等于左子树所有节点，小于等于右子树所有节点。
 
@@ -1739,6 +1739,8 @@ private void inOrder(TreeNode node, List<Integer> nums) {
     inOrder(node.right, nums);
 }
 ```
+
+
 
 # Trie
 

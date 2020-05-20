@@ -144,7 +144,7 @@ public:
 
 
 
-# 6. 字符串同构
+# 6. 字符串同构✏️
 
 205\. Isomorphic Strings (Easy)
 

@@ -752,6 +752,116 @@ public:
 
 
 
+##### 面试题62 圆圈中最后剩下的数字（孩子们的游戏）
+
+【[OJ](https://www.nowcoder.com/practice/f78a359491e64a50bce2d89cff857eb6?tpId=13&tqId=11199&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking) / [力扣](https://leetcode-cn.com/problems/yuan-quan-zhong-zui-hou-sheng-xia-de-shu-zi-lcof/)】0,1,,n-1这n个数字排成一个圆圈，从数字0开始，每次从这个圆圈里删除第m个数字。求出这个圆圈里剩下的最后一个数字。
+
+例如，0、1、2、3、4这5个数字组成一个圆圈，从数字0开始每次删除第3个数字，则删除的前4个数字依次是2、0、4、1，因此最后剩下的数字是3。
+
+**题解**：可使用list/vector模拟，也可根据公式求解。
+
+因为C++中list不支持迭代器+n操作，删除元素必须从头查找第n个元素，使用不便，推荐使用vector。
+
+```C++
+//法一：C++实现 list容器+其迭代器实现圆形链表 （约瑟夫环问题）
+class Solution {
+public:
+    int LastRemaining_Solution(int n, int m)
+    {
+        if(n < 1|| m < 1)
+            return -1;
+            
+        list<int> numbers;
+        for(int i = 0; i < n; i++)
+            numbers.push_back(i);
+            
+        list<int>::iterator current = numbers.begin();
+        while(numbers.size() > 1)
+        {
+            for(int i = 1; i < m; i++) { // 走m-1步到达第m个数处
+                ++current;
+                if(current == numbers.end())
+                    current = numbers.begin();
+            }
+             
+            list<int>::iterator next = ++current;
+            if(next == numbers.end())
+                next = numbers.begin();
+                
+            --current;
+            numbers.erase(current);
+            current = next;
+        }
+        return *current;
+    }
+};
+
+// 链表写法2
+class Solution
+{
+public:
+    int LastRemaining_Solution(int n, int m)
+    {
+        if(n < 1||m < 1)
+            return -1;
+        
+        list<int> nums;
+        for(int i = 0; i < n; i++)
+            nums.push_back(i);
+        
+        int i = 0;
+        while(nums.size() > 1) {
+            i = (i + m - 1) % nums.size(); // 出队的位置索引
+            auto it = nums.begin();
+            advance(it, i); // 从链头往后找i个位置
+            nums.erase(it); // 删除第i个位置
+        }
+        return *nums.begin();
+    }
+};
+
+//法二：使用vector模拟，推荐
+class Solution
+{
+public:
+    int LastRemaining_Solution(int n, int m)
+    {
+        if(n < 1||m < 1)
+            return -1;
+         
+        vector<int> nums(n);
+        for(int i = 0; i < n; i++)
+            nums[i] = i;
+        
+        int i = 0;
+        while(nums.size() > 0) {
+            i = (i + m - 1) % nums.size(); // 出队位置索引
+            nums.erase(nums.begin() + i); // 删除出队元素
+        }
+        return nums[i];
+    }
+};
+
+//法三：找出规律, 通项为：f(n,m)={f(n-1,m)+m}%n。
+class Solution
+{
+public:
+    int LastRemaining_Solution(int n, int m)
+    {
+        if(n < 1||m < 1)
+            return -1;
+         
+        int last = 0;
+        for(int i = 2; i <= n; i++){
+            last = (last + m) % i;
+        }
+        return last;
+    }
+};
+```
+
+
+
 ##### 面试题66 构建乘积数组
 
 【[OJ](https://www.nowcoder.com/practice/94a4d381a68b47b7a8bed86f2975db46?tpId=13&tqId=11204&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking)】给定一个数组A[0,1,...,n-1],请构建一个数组B[0,1,...,n-1],其中B中的元素B[i]=A[0]\*A[1]\*...\*A[i-1]\*A[i+1]\*...\*A[n-1]。不能使用除法。（注意：规定B[0] = A[1] \* A[2] \* ... \* A[n-1]，B[n-1] = A[0] \* A[1] \* ...\* A[n-2];）
@@ -2955,64 +3065,6 @@ public:
             if (dp[i] == next5) i5++;
         }
         return dp[index - 1];
-    }
-};
-```
-
-
-
-##### 面试题62 圆圈中最后剩下的数字（孩子们的游戏）
-
-【[OJ](https://www.nowcoder.com/practice/f78a359491e64a50bce2d89cff857eb6?tpId=13&tqId=11199&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking)】
-
-```C++
-//法一：C++实现 list容器+其迭代器实现圆形链表 （约瑟夫环问题）
-class Solution {
-public:
-    int LastRemaining_Solution(int n, int m)
-    {
-        if(n < 1|| m < 1)
-            return -1;
-            
-        list<int> numbers;
-        for(int i = 0; i < n; i++)
-            numbers.push_back(i);
-            
-        list<int>::iterator current = numbers.begin();
-        while(numbers.size() > 1)
-        {
-            for(int i = 1; i < m; i++) { // 走m-1步到达第m个数处
-                ++current;
-                if(current == numbers.end())
-                    current = numbers.begin();
-            }
-             
-            list<int>::iterator next = ++current;
-            if(next == numbers.end())
-                next = numbers.begin();
-                
-            --current;
-            numbers.erase(current);
-            current = next;
-        }
-        return *current;
-    }
-};
-
-//法二：找出规律, 通项为：f(n,m)={f(n-1,m)+m}%n。
-class Solution_
-{
-public:
-    int LastRemaining_Solution(int n, int m)
-    {
-        if(n < 1||m < 1)
-            return -1;
-         
-        int last = 0;
-        for(int i = 2; i <= n; i++){
-            last = (last + m) % i;
-        }
-        return last;
     }
 };
 ```

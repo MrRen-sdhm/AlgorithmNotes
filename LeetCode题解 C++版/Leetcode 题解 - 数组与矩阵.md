@@ -406,12 +406,19 @@ public int maxChunksToSorted(int[] arr) {
 
 # 13. 除自身以外数组的乘积
 
-[Leetcode 238. 除自身以外数组的乘积 (Medium)](https://leetcode-cn.com/problems/product-of-array-except-self/)
+238\. Product of Array Except Self (Medium)
 
+[Leetcode](https://leetcode.com/problems/product-of-array-except-self/description/) / [力扣](https://leetcode-cn.com/problems/product-of-array-except-self/description/)
+
+```html
+For example, given [1,2,3,4], return [24,12,8,6].
 ```
-输入: [1,2,3,4]
-输出: [24,12,8,6]
-```
+
+给定一个数组，创建一个新数组，新数组的每个元素为原始数组中除了该位置上的元素之外所有元素的乘积。
+
+要求时间复杂度为 O(N)，并且不能使用除法。
+
+
 
 **题解**：
 
