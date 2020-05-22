@@ -1356,7 +1356,7 @@ public:
 
 
 
-# BST✏️
+# BST
 
 二叉查找树（BST）：根节点大于等于左子树所有节点，小于等于右子树所有节点。
 
@@ -1364,7 +1364,7 @@ public:
 
 ## 1. 修剪二叉查找树
 
-669\. Trim a Binary Search Tree (Easy)
+669\. Trim a Binary Search Tree / 修剪二叉搜索树 (Easy)
 
 [Leetcode](https://leetcode.com/problems/trim-a-binary-search-tree/description/) / [力扣](https://leetcode-cn.com/problems/trim-a-binary-search-tree/description/)
 
@@ -1393,27 +1393,38 @@ Output:
 
 题目描述：只保留值在 L \~ R 之间的节点
 
+**题解**：
+
+当node.val > R，那么修剪后的二叉树必定出现在节点的左边，因为此节点需要删除，并且比R小的节点只可能在左边。同理当node.val < L，那么修剪后的二叉树出现在节点的右边。否则，我们将会修剪树的两边。
+
 ```C++
-public TreeNode trimBST(TreeNode root, int L, int R) {
-    if (root == null) return null;
-    if (root.val > R) return trimBST(root.left, L, R);
-    if (root.val < L) return trimBST(root.right, L, R);
-    root.left = trimBST(root.left, L, R);
-    root.right = trimBST(root.right, L, R);
-    return root;
-}
+class Solution {
+public:
+    TreeNode* trimBST(TreeNode* root, int L, int R) {
+        if(!root) return root;
+
+        if(root->val > R) return trimBST(root->left, L, R); // 删除当前节点及右子树
+        if(root->val < L) return trimBST(root->right, L, R); // 删除当前节点及左子树
+        
+        root->left = trimBST(root->left, L, R); // 修剪左子树
+        root->right = trimBST(root->right, L, R); // 修剪右子树
+        return root;
+    }
+};
 ```
 
 
 
 ## 2. 寻找二叉查找树的第 k 个元素
 
-230\. Kth Smallest Element in a BST (Medium)
+230\. Kth Smallest Element in a BST / 二叉搜索树中第K小的元素 (Medium)
 
 [Leetcode](https://leetcode.com/problems/kth-smallest-element-in-a-bst/description/) / [力扣](https://leetcode-cn.com/problems/kth-smallest-element-in-a-bst/description/)
 
+**题解**：
 
-中序遍历解法：
+
+BST中序遍历的结果是有序的，存储结果并取出第k个元素即可
 
 ```C++
 class Solution {
@@ -1456,7 +1467,7 @@ Output: The root of a Greater Tree like this:
           20     13
 ```
 
-**题解**：将中序遍历左根右的顺序逆过来，变成右根左的顺序，这样就可以反向计算累加和sum，同时更新结点值。例如按13->5->2的顺序遍历，sum+=13，此时sum = 13，为右子节点更新后的值。sum+=5，此时sum=18，为根节点更新后的值。sum+=2，此时sum=20，为左子节点更新后的值。
+**题解**：使用**反向中序遍历**，将中序遍历左根右的顺序逆过来，变成右根左的顺序，这样就可以反向计算累加和sum，同时更新结点值。例如按13->5->2的顺序遍历，sum+=13，此时sum = 13，为右子节点更新后的值。sum+=5，此时sum=18，为根节点更新后的值。sum+=2，此时sum=20，为左子节点更新后的值。
 
 ```C++
 class Solution {
@@ -1475,9 +1486,9 @@ public:
 
 
 
-## 4. 二叉查找树的最近公共祖先
+## 4. 二叉查找树的最近公共祖先⭐️
 
-235\. Lowest Common Ancestor of a Binary Search Tree (Easy)
+235\. Lowest Common Ancestor of a Binary Search Tree / 二叉搜索树的最近公共祖先 (Easy)
 
 [Leetcode](https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-search-tree/description/) / [力扣](https://leetcode-cn.com/problems/lowest-common-ancestor-of-a-binary-search-tree/description/)
 
@@ -1493,17 +1504,33 @@ public:
 For example, the lowest common ancestor (LCA) of nodes 2 and 8 is 6. Another example is LCA of nodes 2 and 4 is 2, since a node can be a descendant of itself according to the LCA definition.
 ```
 
+**题解**：
+
+由于二叉搜索树的特点是左<根<右，所以根节点的值一直都是中间值，大于左子树的所有节点值，小于右子树的所有节点值，那么我们可以做如下的判断：
+
+如果根节点的值大于p和q之间的较大值，说明p和q都在左子树中，那么此时我们就进入根节点的左子节点继续递归，如果根节点小于p和q之间的较小值，说明p和q都在右子树中，那么此时我们就进入根节点的右子节点继续递归，如果都不是，则说明当前根节点就是最小共同父节点，直接返回即可。
+
+如下图所示，节点0和5都比节点6小，因而其公共祖先必在节点6的左子树；而节点0比节点2小，节点5比节点2大，说明节点2即为节点0和5的最近公共祖先
+
+<img src="https://gitee.com//MrRen-sdhm/Images/raw/master/img/20200522171044.png" alt="image-20200522171032834" style="zoom: 80%;" />
+
 ```C++
-public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
-    if (root.val > p.val && root.val > q.val) return lowestCommonAncestor(root.left, p, q);
-    if (root.val < p.val && root.val < q.val) return lowestCommonAncestor(root.right, p, q);
-    return root;
-}
+class Solution {
+public:
+    TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
+        if(!root) return root;
+        if(root->val > p->val && root->val > q->val) return lowestCommonAncestor(root->left, p, q);
+        if(root->val < p->val && root->val < q->val) return lowestCommonAncestor(root->right, p, q);
+        return root;
+    }
+};
 ```
 
-## 5. 二叉树的最近公共祖先
 
-236\. Lowest Common Ancestor of a Binary Tree (Medium) 
+
+## 5. 二叉树的最近公共祖先⭐️
+
+236\. Lowest Common Ancestor of a Binary Tree / 二叉树的最近公共祖先 (Medium) 
 
 [Leetcode](https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree/description/) / [力扣](https://leetcode-cn.com/problems/lowest-common-ancestor-of-a-binary-tree/description/)
 
@@ -1516,17 +1543,35 @@ public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
         /  \
        7    4
 
-For example, the lowest common ancestor (LCA) of nodes 5 and 1 is 3. Another example is LCA of nodes 5 and 4 is 5, since a node can be a descendant of itself according to the LCA definition.
+For example, the lowest common ancestor (LCA) of nodes 5 and 1 is 3. 
+Another example is LCA of nodes 5 and 4 is 5, since a node can be a descendant of itself according to the LCA definition.
 ```
 
+**题解**：
+
+这道题是普通是二叉树，不是二叉搜索树，所以就不能利用其特有的性质，我们只能在二叉树中来搜索p和q，然后从路径中找到最后一个相同的节点即为父节点，可以用递归来实现，在递归函数中，**首先看当前结点是否为空，若为空则直接返回空，若为p或q中的任意一个，也直接返回当前结点**。否则的话就对其左右子结点分别调用递归函数，由于这道题限制了p和q一定都在二叉树中存在，那么**如果当前结点不等于p或q，p和q要么分别位于左右子树中，要么同时位于左子树，或者同时位于右子树**，那么我们分别来讨论：
+
+- 若p和q分别位于左右子树中，那么对左右子结点调用递归函数，会分别返回p和q结点的位置，而当前结点正好就是p和q的最小共同父结点，直接返回当前结点即可，这就是题目中的例子1的情况。
+
+- 若p和q同时位于左子树，这里有两种情况，一种情况是 left 会返回p和q中较高的那个位置，而 right 会返回空，所以最终返回非空的 left 即可，这就是题目中的例子2的情况。还有一种情况是会返回p和q的最小父结点，就是说当前结点的左子树中的某个结点才是p和q的最小父结点，会被返回。
+
+- 若p和q同时位于右子树，同样这里有两种情况，一种情况是 right 会返回p和q中较高的那个位置，而 left 会返回空，所以最终返回非空的 right 即可，还有一种情况是会返回p和q的最小父结点，就是说当前结点的右子树中的某个结点才是p和q的最小父结点，会被返回。
+
 ```C++
-public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
-    if (root == null || root == p || root == q) return root;
-    TreeNode left = lowestCommonAncestor(root.left, p, q);
-    TreeNode right = lowestCommonAncestor(root.right, p, q);
-    return left == null ? right : right == null ? left : root;
-}
+class Solution {
+public:
+    TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {
+        if(!root || root == p || root == q) return root;
+
+        TreeNode *left = lowestCommonAncestor(root->left, p, q);
+        TreeNode *right = lowestCommonAncestor(root->right, p, q);
+        if(left && right) return root; // pq位于当前节点两侧
+        return left ? left : right; // pq位于当前节点同一侧，返回非空的节点
+    }
+};
 ```
+
+
 
 ## 6. 从有序数组中构造二叉查找树
 
@@ -1558,9 +1603,9 @@ public:
 
 
 
-## 7. 根据有序链表构造平衡的二叉查找树
+## 7. 根据有序链表构造平衡的二叉查找树✏️
 
-109\. Convert Sorted List to Binary Search Tree (Medium)
+109\. Convert Sorted List to Binary Search Tree / 有序链表转换二叉搜索树 (Medium)
 
 [Leetcode](https://leetcode.com/problems/convert-sorted-list-to-binary-search-tree/description/) / [力扣](https://leetcode-cn.com/problems/convert-sorted-list-to-binary-search-tree/description/)
 
@@ -1575,6 +1620,8 @@ One possible answer is: [0,-3,9,-10,null,5], which represents the following heig
    /   /
  -10  5
 ```
+
+**题解**：
 
 ```C++
 public TreeNode sortedListToBST(ListNode head) {
@@ -1600,6 +1647,8 @@ private ListNode preMid(ListNode head) {
     return pre;
 }
 ```
+
+
 
 ## 8. 在二叉查找树中寻找两个节点，使它们的和为一个给定值
 
@@ -1647,6 +1696,8 @@ private void inOrder(TreeNode root, List<Integer> nums) {
 }
 ```
 
+
+
 ## 9. 在二叉查找树中查找两个节点之差的最小绝对值
 
 530\. Minimum Absolute Difference in BST (Easy)
@@ -1686,6 +1737,8 @@ private void inOrder(TreeNode node) {
     inOrder(node.right);
 }
 ```
+
+
 
 ## 10. 寻找二叉查找树中出现次数最多的值
 
@@ -1747,6 +1800,8 @@ private void inOrder(TreeNode node, List<Integer> nums) {
 <div align="center"> <img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/5c638d59-d4ae-4ba4-ad44-80bdc30f38dd.jpg"/> </div><br>
 
 Trie，又称前缀树或字典树，用于判断字符串是否存在或者是否具有某种字符串前缀。
+
+
 
 ## 1. 实现一个 Trie
 
@@ -1811,6 +1866,8 @@ class Trie {
     }
 }
 ```
+
+
 
 ## 2. 实现一个 Trie，用来求前缀和
 
