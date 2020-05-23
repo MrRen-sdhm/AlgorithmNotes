@@ -8,13 +8,15 @@
 
 #### 数组
 
-##### 面试题3 数组中重复的数字⭐️
+##### 面试题3.1 找出数组中重复的数字⭐️
 
-【[OJ](https://www.nowcoder.com/practice/623a5ac0ea5b4e5f95552655361ae0a8?tpId=13&tqId=11203&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking)】在一个长度为n的数组里的所有数字都在0到n-1的范围内。 数组中某些数字是重复的，但不知道有几个数字是重复的。也不知道每个数字重复几次。请找出数组中任意一个重复的数字。 例如，如果输入长度为7的数组{2,3,1,0,2,5,3}，那么对应的输出是第一个重复的数字2。
+【[OJ](https://www.nowcoder.com/practice/623a5ac0ea5b4e5f95552655361ae0a8?tpId=13&tqId=11203&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking)】在一个**长度为n**的数组里的所有数字都在0到n-1的范围内。 数组中某些数字是重复的，但不知道有几个数字是重复的。也不知道每个数字重复几次。请找出数组中任意一个重复的数字。 例如，如果输入长度为7的数组{2,3,1,0,2,5,3}，那么对应的输出是第一个重复的数字2。
 
 **题解**：要求时间复杂度 O(N)，空间复杂度 O(1)。因此不能使用排序的方法，也不能使用额外的标记数组。
 
 对于这种数组元素在 [0, n-1] 范围内的问题，可以**将值为 i 的元素调整到第 i 个位置上**进行求解。本题要求找出重复的数字，因此在调整过程中，如果第 i 位置上已经有一个值为 i 的元素，就可以知道 i 值重复。
+
+**关键点：只要当前位置的数nums[i]与下标不对应，就将nums[i]与其对应下标位置的数交换，若对应下标位置的数与nums[i]相等则为重复数。**
 
 以 (2, 3, 1, 0, 2, 5) 为例，遍历到位置 4 时，该位置上的数为 2，但是第 2 个位置上已经有一个 2 的值了，因此可以知道 2 重复：
 
@@ -44,6 +46,48 @@ public:
         }
         
         return false;
+    }
+};
+```
+
+
+
+##### 面试题3.2 不修改数组找出重复的数字（核心思想：二分查找）⭐️
+
+【[OJ](https://www.acwing.com/problem/content/15/) / [Leetcode](https://leetcode-cn.com/problems/find-the-duplicate-number/)】给定一个长度为 n+1 的数组`nums`，数组中所有的数均在 1∼n 的范围内，其中 n≥1。
+
+请找出数组中任意一个重复的数，但不能修改输入的数组，要求空间复杂度为O(1)。
+
+```
+给定 nums = [2, 3, 5, 4, 3, 2, 6, 7]。
+返回 2 或 3。
+```
+
+**题解**：使用二分查找，时间复杂度O(nlogn)
+
+此题不允许使用额外空间，也不允许修改原数组，因而无法排序。但是题中限定数据范围为`[1, n]`，而序列`1,2...,n`是有序的，因而可以**在`[1, n]`中进行二分查找，注意不是在nums数组中进行查找**。`mid = (1 + n) / 2`，接下来判断最终答案是在 `[1, mid]` 中还是在 `[mid + 1, n]` 中。
+
+为了缩小区间，需要统计原数组中小于等于 `mid` 的元素个数，记为 `count`。如果 `count > mid` ，根据鸽巢原理，在 `[1,mid]` 范围内的数字个数超过了 `mid` ，所以区间中`[1, mid]`一定有一个重复数字，保留区间`[1, mid]`。否则重复元素在`[mid + 1, n]`中，切除区间`[mid + 1, n]`。
+
+最终两个指针的值即为重复数字！
+
+```C++
+class Solution {
+public:
+    int duplicateInArray(vector<int>& nums) {
+        if(nums.empty()) return -1;
+        int n = nums.size();
+        
+        int l = 1, r = n;
+        while(l < r) {
+            int mid = l + r >> 1;
+            int cnt = 0;
+            for(int i = 0; i < n; i++) // 统计原数组中<=mid的元素个数
+                if(nums[i] <= mid) cnt++;
+            if(cnt > mid) r = mid; // 重复数字在区间[1, mid]中
+            else l = mid + 1; // 重复数字在区间[mid + 1, n]中
+        }
+        return l;
     }
 };
 ```
@@ -905,9 +949,11 @@ public:
 
 **题解**：
 
-方法1：使用递归
+方法1：**递归**，实际上使用的是栈，推荐
 
 要逆序打印链表 1->2->3（3,2,1)，可以先逆序打印链表 2->3(3,2)，最后再打印第一个节点 1。而链表 2->3 可以看成一个新的链表，要逆序打印该链表可以继续使用求解函数，也就是在求解函数中调用自己，这就是递归函数。
+
+注意：结果的保存需放在递归函数的后面，**类似于二叉树的后序遍历**。
 
 ```C++
 class Solution {
@@ -923,46 +969,9 @@ public:
 };
 ```
 
-方法2：使用头插法
 
-头插法顾名思义是将节点插入到头部：在遍历原始链表时，将当前节点插入新链表的头部，使其成为第一个节点。
 
-链表的操作需要维护后继关系，例如在某个节点 node1 之后插入一个节点 node2，我们可以通过修改后继关系来实现：
-
-```C++
-node3 = node1.next;
-node2.next = node3;
-node1.next = node2;
-```
-
-<img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/58c8e370-3bec-4c2b-bf17-c8d34345dd17.gif" alt="img" style="zoom: 67%;" />
-
-为了能将一个节点插入头部，我们引入了一个叫头结点的辅助节点，该节点不存储值，只是为了方便进行插入操作。不要将头结点与第一个节点混起来，第一个节点是链表中第一个真正存储值的节点。
-
-<img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/0dae7e93-cfd1-4bd3-97e8-325b032b716f-1572687622947.gif" alt="img" style="zoom: 67%;" />
-
-```java
-public ArrayList<Integer> printListFromTailToHead(ListNode listNode) {
-    // 头插法构建逆序链表
-    ListNode head = new ListNode(-1);
-    while (listNode != null) {
-        ListNode memo = listNode.next;
-        listNode.next = head.next;
-        head.next = listNode;
-        listNode = memo;
-    }
-    // 构建 ArrayList
-    ArrayList<Integer> ret = new ArrayList<>();
-    head = head.next;
-    while (head != null) {
-        ret.add(head.val);
-        head = head.next;
-    }
-    return ret;
-}
-```
-
-方法3：使用栈
+方法2：使用栈
 
 栈具有后进先出的特点，在遍历链表时将值按顺序放入栈中，最后出栈的顺序即为逆序。
 
@@ -972,28 +981,70 @@ public ArrayList<Integer> printListFromTailToHead(ListNode listNode) {
 class Solution {
 public:
     vector<int> printListFromTailToHead(ListNode* head) {
-        vector<int> arrayList;
-        stack<int> arrayStack;
-        ListNode* pNode = head;
+        vector<int> vec;
+        stack<int> stk;
         
-        // 遍历链表并将值存入栈中
-        while (pNode) {
-            arrayStack.push(pNode->val);
-            pNode = pNode->next;
-        }
-        
-        // 获取栈顶元素到vector，出栈
-        while(!arrayStack.empty()) {
-            arrayList.push_back(arrayStack.top());
-            arrayStack.pop();
-        }
-        
-        return arrayList;
+        while (head) { // 遍历链表并将值存入栈中
+            stk.push(head->val);
+            head = head->next;
+        }        
+        while(!stk.empty()) { // 获取栈顶元素到vector，出栈
+            vec.push_back(stk.top()); stk.pop();
+        }        
+        return vec;
     }
 };
 ```
 
-方法4：借助vector的insert方法模拟栈（不推荐，代码简单，但是每次插入都要移动整个数组的元素）
+
+
+方法3：翻转链表后遍历
+
+```C++
+class Solution {
+public:
+    vector<int> printListFromTailToHead(ListNode* head) {
+        ListNode *pre = NULL, *next = NULL;
+        while(head) {
+            next = head->next;
+            head->next = pre;
+            pre = head;
+            head = next;
+        }
+        
+        vector<int> res;
+        head = pre; // 当前队头为pre
+        while(head) {
+            res.push_back(head->val);
+            head = head->next;
+        }
+        return res;
+    }
+};
+```
+
+
+
+方法4：正向遍历后存入vector，然后翻转vector即可
+
+```C++
+class Solution {
+public:
+    vector<int> printListReversingly(ListNode* head) {
+        vector<int> res;
+        while(head) {
+            res.push_back(head->val);
+            head = head->next;
+        }
+        reverse(res.begin(), res.end());
+        return res;
+    }
+};
+```
+
+
+
+方法5：借助vector的insert方法模拟栈（不推荐，代码简单，但是每次插入都要移动整个数组的元素）
 
 ```C++
 class Solution {
@@ -1203,6 +1254,20 @@ public:
 
 
 方法2：迭代，使用头插法，需创建新头节点
+
+头插法顾名思义是将节点插入到头部：在遍历原始链表时，将当前节点插入新链表的头部，使其成为第一个节点。
+
+链表的操作需要维护后继关系，例如在某个节点 node1 之后插入一个节点 node2，我们可以通过修改后继关系来实现：
+
+```C++
+node3 = node1.next;
+node2.next = node3;
+node1.next = node2;
+```
+
+<img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/58c8e370-3bec-4c2b-bf17-c8d34345dd17.gif" alt="img" style="zoom: 67%;" />
+
+为了能将一个节点插入头部，我们引入了一个叫头结点的辅助节点，该节点不存储值，只是为了方便进行插入操作。不要将头结点与第一个节点混起来，第一个节点是链表中第一个真正存储值的节点。
 
 <img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/0dae7e93-cfd1-4bd3-97e8-325b032b716f-1572687622947.gif" alt="img" style="zoom: 67%;" />
 
@@ -2515,39 +2580,42 @@ public:
 
 #### 字符串
 
-##### 面试题5 替换空格
+##### 面试题5 替换空格（双指针）
 
 【[OJ](https://www.nowcoder.com/practice/4060ac7e3e404ad1a894ef3e17650423?tpId=13&tqId=11155&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking)】请实现一个函数，将一个字符串中的每个空格替换成“%20”。例如，当字符串为We Are Happy.则经过替换之后的字符串为We%20Are%20Happy。
+
+**题解**：使用双指针，时间复杂度O(n)
+
+1. 首先遍历一遍原数组，求出最终答案的长度length；
+2. 使用两个指针，指针i指向原字符串的末尾，指针 j 指向length的位置；
+3. 两个指针分别从后往前遍历，如果*end == ' '，则指针j的位置上依次填充'0', '2', '%'，这样倒着看就是"%20"；如果str[i] != ' '，则指针j的位置上填充该字符即可。
+
+由于 i 之前的字符串，在变换之后，长度一定不小于原字符串，所以遍历过程中一定有i <= j，这样可以保证str[j]不会覆盖还未遍历过的str[i]，从而答案是正确的。
 
 ```C++
 class Solution {
 public:
-	void replaceSpace(char *str,int length) {
-        int blancks_cnt = 0;
-        int str_length = 0;
+    void replaceSpace(char *str,int length) {
+        int lenNew = 0, len = 0;
         for (int i = 0; str[i] != '\0'; i++) { // 统计字符串实际长度及空格数
-            str_length ++;
+            len++;
             if (str[i] == ' ') {
-                blancks_cnt++;
-            }
+                lenNew += 3;
+            } else lenNew++;
         }
+        if(len + 1 > length) return; // 输入的length包含'\0'的长度
         
-        int after_len = str_length + 2*blancks_cnt; // 替换后字符串长度
-        if (str_length+1 > length) return ; // 长度输入有误
-        char *pEnd = str + str_length; // 指向原字符串'\0'
-        char *pEndNew = str + after_len; // 指向新字符串的'\0'
-        while (pEnd < pEndNew) { // 是空格，替换
-            if (*pEnd == ' ') {
-                *pEndNew-- = '0';
-                *pEndNew-- = '2';
-                *pEndNew-- = '%';
-            } else { // 不是空格，填入原始数据
-                *pEndNew-- = *pEnd;
+        int end = len, endNew = lenNew; // 从'\0开始替换'
+        while(end >= 0) {
+            if(str[end] != ' ') str[endNew--] = str[end];
+            else { // 替换空格
+                str[endNew--] = '0';
+                str[endNew--] = '2';
+                str[endNew--] = '%';
             }
-            
-            --pEnd;
+            end--;
         }
-	}
+    }
 };
 ```
 

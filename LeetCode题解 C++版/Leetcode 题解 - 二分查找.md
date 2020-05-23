@@ -441,7 +441,7 @@ public:
 
 287\. Find the Duplicate Number / 寻找重复数 (Medium)
 
-[Leetcode](https://leetcode.com/problems/find-the-duplicate-number/description/) / [力扣](https://leetcode-cn.com/problems/find-the-duplicate-number/description/)
+[Leetcode](https://leetcode.com/problems/find-the-duplicate-number/description/) / [力扣](https://leetcode-cn.com/problems/find-the-duplicate-number/description/)  给定一个包含 **n + 1 个整数**的数组 nums，其数字都在 1 到 n 之间（包括 1 和 n），可知至少存在一个重复的整数。假设**只有一个重复的整数**，找出这个重复的数。
 
 要求不能修改数组，也不能使用额外的空间。
 
@@ -452,9 +452,9 @@ Output: 2
 
 **题解**：
 
-[方法1](https://leetcode-cn.com/problems/find-the-duplicate-number/solution/xiang-xi-tong-su-de-si-lu-fen-xi-duo-jie-fa-by--52/)：二分查找
+[方法1](https://leetcode-cn.com/problems/find-the-duplicate-number/solution/xiang-xi-tong-su-de-si-lu-fen-xi-duo-jie-fa-by--52/)：二分查找，**也适用于数组中存在多个重复的数**（可找到其中一个），时间复杂度**O(nlogn)**
 
-此题不允许使用额外空间，也不允许修改原数组，因而无法排序。但是题中限定数据范围为`[1, n]`，而序列`1,2...,n`是有序的，因而可以在`[1, n]`中进行二分查找。`mid = (1 + n) / 2`，接下来判断最终答案是在 `[1, mid]` 中还是在 `[mid + 1, n]` 中。
+此题不允许使用额外空间，也不允许修改原数组，因而无法排序。但是题中限定数据范围为`[1, n]`，而序列`1,2...,n`是有序的，因而可以**在`[1, n]`中进行二分查找，注意不是在nums数组中进行查找**。`mid = (1 + n) / 2`，接下来判断最终答案是在 `[1, mid]` 中还是在 `[mid + 1, n]` 中。
 
 为了缩小区间，需要统计原数组中小于等于 `mid` 的元素个数，记为 `count`。如果 `count > mid` ，根据鸽巢原理，在 `[1,mid]` 范围内的数字个数超过了 `mid` ，所以区间中`[1, mid]`一定有一个重复数字，保留区间`[1, mid]`。否则重复元素在`[mid + 1, n]`中，切除区间`[mid + 1, n]`。
 
@@ -482,28 +482,31 @@ public:
 };
 ```
 
-[方法2](https://leetcode-cn.com/problems/find-the-duplicate-number/solution/kuai-man-zhi-zhen-de-jie-shi-cong-damien_undoxie-d/)：快慢指针
 
-由于题目限定了区间 [1,n]，所以可以巧妙的利用坐标和数值之间相互转换，而由于重复数字的存在，那么一定会形成环，用快慢指针可以找到环并确定环的起始位置
+
+[方法2](https://leetcode-cn.com/problems/find-the-duplicate-number/solution/kuai-man-zhi-zhen-de-jie-shi-cong-damien_undoxie-d/)：快慢指针，**不适用于数组中存在多个重复数字的情况**，时间复杂度**O(n)**
+
+由于题目限定了区间 [1,n]，所以可以巧妙的利用坐标和数值之间相互转换，而由于重复数字的存在，那么一定会形成环，用快慢指针可以找到环并确定环的起始位置。
+
+**可以把nums[i]想象成链表中的节点，nums[i]存储的是每个节点的next指针**。例如nums=[1,3,4,2,2]，则链表中的节点nums[0]=1指向下标为1的节点nums[1]=3，节点nums[1]=3指向下标为3的节点nums[3]=2，节点nums[3]=2指向下标为2的节点nums[2]=4，节点nums[2]=4指向下标为4的节点nums[4]=2，节点nums[4]=2指向下标为2的节点nums[2]=4，此时产生了环，指针的指向即为重复的元素2
+
+<img src="C:/Users/sdhm/AppData/Roaming/Typora/typora-user-images/image-20200523171128636.png" alt="image-20200523171128636" style="zoom:67%;" />
 
 ```C++
 class Solution {
 public:
     int findDuplicate(vector<int>& nums) {
-        
         int fast = 0, slow = 0;
-        while(true){
+        while(true){ // 快指针每次走两步，慢指针走一步
             fast = nums[nums[fast]];
             slow = nums[slow];
-            if(fast == slow)
-                break;
+            if(fast == slow) break;
         }
-        int finder = 0;
-        while(true){
-            finder = nums[finder];
+        int fast = 0; // 快指针从头开始走
+        while(true){ // 两指针每次均走一步
+            finder = nums[fast];
             slow = nums[slow];
-            if(slow == finder)
-                break;        
+            if(slow == fast) break;        
         }
         return slow;
     }
