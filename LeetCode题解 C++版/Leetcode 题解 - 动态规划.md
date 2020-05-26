@@ -1605,7 +1605,7 @@ for 0 <= i < n:
 
 每种「状态」有哪些「选择」，应该如何更新「状态」。只看「持有状态」，可以画个状态转移图：
 
-<img src="https://gitee.com//MrRen-sdhm/Images/raw/master/img/20200518153906.png?alt=media" alt="img" style="zoom:67%;" />
+<img src="https://gitee.com//MrRen-sdhm/Images/raw/master/img/20200518153906.png?alt=media" alt="img" style="zoom: 50%;" />
 
 通过这个图可以很清楚地看到，每种状态（0 和 1）是如何转移而来的。根据这个图，可以写出**状态转移方程**：
 

@@ -852,6 +852,11 @@ public:
 
 连通性模型中不需要恢复现场，搜索全部在网格内部。
 
+注意：连通性模型中**起点通常需要特殊处理**，即起点起始状态就是走过的，因此有两种处理方法：
+
+- 在主函数写上 `memo[start_x][start_y] = true` 一开始就将起点标记为已走过状态，这样就可以像BFS一样在进入下一点时将memo置位
+- 也可在dfs函数的开始写上 `memo[x][y] = true` 这样不仅可以将之后点的状态置1，也可以将起点的状态置1
+
 
 
 ### 1. 查找最大的连通面积
@@ -1661,7 +1666,7 @@ public:
 
 <img src="https://pic.leetcode-cn.com/0bf18f9b86a2542d1f6aa8db6cc45475fce5aa329a07ca02a9357c2ead81eec1-image.png" alt="image.png" style="zoom: 33%;" />
 
-1、[**子集、排列、组合通用方法**](https://labuladong.github.io/ebook/%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E7%B3%BB%E5%88%97/%E5%AD%90%E9%9B%86%E6%8E%92%E5%88%97%E7%BB%84%E5%90%88.html)。使用vector的pop_back进行撤销，更对称，更容易理解
+🥇方法1：[**子集、排列、组合通用方法**](https://labuladong.github.io/ebook/%E9%AB%98%E9%A2%91%E9%9D%A2%E8%AF%95%E7%B3%BB%E5%88%97/%E5%AD%90%E9%9B%86%E6%8E%92%E5%88%97%E7%BB%84%E5%90%88.html)。使用vector的pop_back进行撤销，更对称，更容易理解
 
 ```C++
 class Solution {
@@ -1694,7 +1699,9 @@ public:
 };
 ```
 
-2、非通用方法排列中path的大小固定，每次逐个填入即可。回溯时无需恢复path。
+
+
+方法2：非通用方法排列中path的大小固定，每次逐个填入即可。回溯时无需恢复path。
 
 ```C++
 class Solution {
@@ -1728,44 +1735,9 @@ public:
 };
 ```
 
-3、非class解法：
-
-```C++
-#include <iostream>
-using namespace std;
-
-const int N = 10;
-int n;
-int path[N]; // 记录路径
-bool st[N]; // 标记某层是否遍历过
-
-void dfs(int u) {
-    if(u == n) { // 遍历完所有层
-        for(int i = 0; i < n; i++)
-            cout << path[i];
-        cout << endl;
-        return;
-    }
-    for(int i = 0; i < n; i++) { // 枚举当前位置可以使用的数，每个可使用的数会形成一条分支
-        if(!st[i]) { // 选择一个当前层没有用过的数
-            path[u] = i;
-            st[i] = true; // 标记
-            dfs(u + 1); // 遍历下一层
-            st[i] = false;// 恢复现场
-        }
-    }
-}
-
-int main () {
-    cin >> n;
-    dfs(0); // 从第0层开始搜索
-    return 0;
-}
-```
 
 
-
-### 6. 含有相同元素求排列
+### 6. 含有重复元素求排列
 
 47\. Permutations II / 全排列 II (Medium)
 
@@ -1778,7 +1750,11 @@ int main () {
 
 **[题解](https://leetcode-cn.com/problems/permutations-ii/solution/hui-su-suan-fa-python-dai-ma-java-dai-ma-by-liwe-2/)**：数组元素可能含有相同的元素，进行排列时就有可能出现重复的排列，要求重复的排列只返回一个。
 
-方法1:
+![image-20200526191652642](https://gitee.com//MrRen-sdhm/Images/raw/master/img/20200526191656.png)
+
+
+
+🥇方法1:
 
 在实现上，和 Permutations 不同的是**要先排序**，然后在添加一个元素时，判断这个元素是否等于前一个元素，如果等于，并且**前一个元素还未访问**（说明当前元素是回溯操作恢复的，即是重复的；若前一个元素已访问，说明当前元素不是回溯操作恢复的，即不是重复的），那么就跳过这个元素。
 
@@ -1815,6 +1791,8 @@ public:
     }
 };
 ```
+
+
 
 [方法2](https://www.acwing.com/solution/LeetCode/content/126/)：
 
