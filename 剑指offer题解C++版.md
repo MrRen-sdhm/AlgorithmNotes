@@ -879,7 +879,7 @@ public:
 
 ### 面试题62 圆圈中最后剩下的数字
 
-【[OJ](https://www.nowcoder.com/practice/f78a359491e64a50bce2d89cff857eb6?tpId=13&tqId=11199&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking) / [力扣](https://leetcode-cn.com/problems/yuan-quan-zhong-zui-hou-sheng-xia-de-shu-zi-lcof/)】0,1,,n-1这n个数字排成一个圆圈，从数字0开始，每次从这个圆圈里删除第m个数字。求出这个圆圈里剩下的最后一个数字。
+【[OJ](https://www.nowcoder.com/practice/f78a359491e64a50bce2d89cff857eb6?tpId=13&tqId=11199&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking) / [力扣](https://leetcode-cn.com/problems/yuan-quan-zhong-zui-hou-sheng-xia-de-shu-zi-lcof/) / [AcWIng](https://www.acwing.com/problem/content/78/)】0,1,,n-1这n个数字排成一个圆圈，从数字0开始，每次从这个圆圈里删除第m个数字。求出这个圆圈里剩下的最后一个数字。
 
 例如，0、1、2、3、4这5个数字组成一个圆圈，从数字0开始每次删除第3个数字，则删除的前4个数字依次是2、0、4、1，因此最后剩下的数字是3。
 
@@ -887,8 +887,60 @@ public:
 
 因为C++中list不支持迭代器+n操作，删除元素必须从头查找第n个元素，使用不便，推荐使用vector。
 
+🥇方法1：使用vector模拟，推荐
+
 ```cpp
-//法一：C++实现 list容器+其迭代器实现圆形链表 （约瑟夫环问题）
+class Solution
+{
+public:
+    int LastRemaining_Solution(int n, int m)
+    {
+        if(n < 1||m < 1) return -1;
+         
+        vector<int> nums(n);
+        for(int i = 0; i < n; i++)
+            nums[i] = i;
+        
+        int i = 0;
+        while(nums.size() > 0) {
+            i = (i + m - 1) % nums.size(); // 出队位置索引
+            nums.erase(nums.begin() + i); // 删除出队元素
+        }
+        return nums[i];
+    }
+};
+```
+
+方法2：找出规律, 通项为：f(n,m) = {f(n-1,m) + m} % n。
+
+```cpp
+class Solution
+{
+public:
+    int LastRemaining_Solution(int n, int m) {
+        if(n < 1||m < 1) return -1;
+         
+        int last = 0;
+        for(int i = 2; i <= n; i++){
+            last = (last + m) % i;
+        }
+        return last;
+    }
+};
+
+// 递归写法
+class Solution {
+public:
+    int LastRemaining_Solution(int n, int m) {
+        if (n == 1) return 0;
+        return (LastRemaining_Solution(n - 1, m) + m) % n;
+    }
+};
+```
+
+方法3：C++实现 list容器+其迭代器实现圆形链表 （约瑟夫环问题）
+
+```cpp
 class Solution {
 public:
     int LastRemaining_Solution(int n, int m)
@@ -944,54 +996,24 @@ public:
         return *nums.begin();
     }
 };
-
-//法二：使用vector模拟，推荐
-class Solution
-{
-public:
-    int LastRemaining_Solution(int n, int m)
-    {
-        if(n < 1||m < 1)
-            return -1;
-         
-        vector<int> nums(n);
-        for(int i = 0; i < n; i++)
-            nums[i] = i;
-        
-        int i = 0;
-        while(nums.size() > 0) {
-            i = (i + m - 1) % nums.size(); // 出队位置索引
-            nums.erase(nums.begin() + i); // 删除出队元素
-        }
-        return nums[i];
-    }
-};
-
-//法三：找出规律, 通项为：f(n,m)={f(n-1,m)+m}%n。
-class Solution
-{
-public:
-    int LastRemaining_Solution(int n, int m)
-    {
-        if(n < 1||m < 1)
-            return -1;
-         
-        int last = 0;
-        for(int i = 2; i <= n; i++){
-            last = (last + m) % i;
-        }
-        return last;
-    }
-};
 ```
 
 
 
 ### 面试题66 构建乘积数组
 
-【[OJ](https://www.nowcoder.com/practice/94a4d381a68b47b7a8bed86f2975db46?tpId=13&tqId=11204&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking)】给定一个数组A[0,1,...,n-1],请构建一个数组B[0,1,...,n-1],其中B中的元素B[i]=A[0]\*A[1]\*...\*A[i-1]\*A[i+1]\*...\*A[n-1]。不能使用除法。（注意：规定B[0] = A[1] \* A[2] \* ... \* A[n-1]，B[n-1] = A[0] \* A[1] \* ...\* A[n-2];）
+【[OJ](https://www.nowcoder.com/practice/94a4d381a68b47b7a8bed86f2975db46?tpId=13&tqId=11204&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking) / [AcWing](https://www.acwing.com/problem/content/82/)】给定一个数组A[0,1,...,n-1]，请构建一个数组B[0,1,...,n-1]，其中B中的元素B[i]=A[0]\*A[1]\*...\***A[i-1]\*A[i+1]**\*...\*A[n-1]。不能使用除法，使用 O(1) 的空间。（注意：规定B[0] = A[1] \* A[2] \* ... \* A[n-1]，B[n-1] = A[0] \* A[1] \* ...\* A[n-2]）
 
-**题解**：不妨定义C[i] =A[0] x A[1]x ··· xA[i- 1] , D[i]=A[i+ I] x ··· xA [n-2] xA [n-1]。C[i] 可以用自上而下的顺序计算出来，即 C[i] =C[i-1] x A [i-1] 。类似的，D[i]也可以用自下而上的顺序计算出来，即 D[i] =D[i+1] xA[i+1]。
+```
+输入：[1, 2, 3, 4, 5]
+输出：[120, 60, 40, 30, 24]
+```
+
+**题解**：求的是数组 A[0,1,...,n-1] 中除掉 A[i] 后其他元素的乘积。
+
+不妨定义C[i] =A[0] x A[1]x ··· xA[i- 1] , D[i]=A[i+ I] x ··· xA [n-2] xA [n-1]。C[i] 可以用自上而下的顺序计算出来，即 C[i] =C[i-1] x A [i-1] 。类似的，D[i]也可以用自下而上的顺序计算出来，即 D[i] =D[i+1] xA[i+1]。
+
+写法1：
 
 ```cpp
 class Solution {
@@ -1014,6 +1036,29 @@ public:
             }
         }
         return B;
+    }
+};
+```
+
+写法2：
+
+```cpp
+class Solution {
+public:
+    vector<int> multiply(const vector<int>& A) {
+        if(A.empty()) return vector<int>();
+        
+        int n = A.size();
+        vector<int> res(n);
+        for(int i = 0, p = 1; i < n; i++) {
+            res[i] = p;
+            p *= A[i];
+        }
+        for(int i = n - 1, p = 1; i >= 0; i--) {
+            res[i] *= p;
+            p *= A[i];
+        }
+        return res;
     }
 };
 ```
@@ -1459,6 +1504,72 @@ public:
 
 
 
+附自定义链表节点写法，手撕必备！⭐️⭐️
+
+```cpp
+#include <iostream>
+using namespace std;
+
+struct ListNode {
+    ListNode* next;
+    int val;
+    ListNode(int x) : next(NULL), val(x) {}
+};
+
+ListNode* ReverseList(ListNode *head) {
+    if(!head) return NULL;
+    ListNode* pre = NULL, *next = NULL;
+    while(head) {
+        next = head->next;
+        head->next = pre;
+        pre = head;
+        head = next;
+    }
+    return pre;
+}
+
+ListNode* CreatList() {
+    ListNode *dummy = new ListNode(-1);
+    ListNode *cur = dummy;
+    
+    int val;
+    while(cin >> val)
+    {
+        ListNode *node = new ListNode(val);
+        cur->next = node;
+        cur = cur->next;
+    }
+	return dummy->next;
+}
+
+void TraverseList(ListNode* head) {
+    if(!head) return;
+    ListNode *cur = head;
+    while(cur) {
+        cout << cur->val << ' ';
+        cur = cur->next;
+    }
+}
+
+int main() {
+    // 手动创建链表
+    ListNode *node1 = new ListNode(1);
+    ListNode *node2 = new ListNode(2);
+    ListNode *node3 = new ListNode(3);
+    node1->next = node2;
+    node2->next = node3;
+    node3->next = NULL;
+    
+    ListNode *Head = CreatList(); // 创建链表
+    ListNode *head = ReverseList(Head); // 反转链表
+    TraverseList(head); // 遍历链表
+    
+    return 0;
+}
+```
+
+
+
 ### 面试题25 合并两个排序的链表（核心思想：递归/迭代）⭐️⭐️
 
 【[OJ](https://www.nowcoder.com/practice/d8b6b4358f774294a89de2a6ac4d9337?tpId=13&tqId=11169&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking) / [AcWing](https://www.acwing.com/problem/content/34/)】输入两个单调递增的链表，输出两个链表合成后的链表，合成后的链表满足单调不减规则。
@@ -1734,63 +1845,39 @@ public:
 
 
 
-### 面试题59.1 滑动窗口的最大值（核心思想：双端队列）
+### 面试题59.1 滑动窗口的最大值（核心思想：双端队列）⭐️
 
-【[OJ](https://www.nowcoder.com/practice/1624bc35a45c42c0bc17d17fa0cba788?tpId=13&tqId=11217&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking)】给定一个数组和滑动窗口的大小，找出所有滑动窗口里数值的最大值。例如，如果输入数组{2,3,4,2,6,2,5,1}及滑动窗口的大小3，那么一共存在6个滑动窗口，他们的最大值分别为{4,4,6,6,6,5}； 针对数组{2,3,4,2,6,2,5,1}的滑动窗口有以下6个： {[2,3,4],2,6,2,5,1}， {2,[3,4,2],6,2,5,1}， {2,3,[4,2,6],2,5,1}， {2,3,4,[2,6,2],5,1}， {2,3,4,2,[6,2,5],1}， {2,3,4,2,6,[2,5,1]}。
+【[OJ](https://www.nowcoder.com/practice/1624bc35a45c42c0bc17d17fa0cba788?tpId=13&tqId=11217&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking) / [AcWing](https://www.acwing.com/problem/content/75/)】给定一个数组和滑动窗口的大小，找出所有滑动窗口里数值的最大值。例如，如果输入数组{2,3,4,2,6,2,5,1}及滑动窗口的大小3，那么一共存在6个滑动窗口，他们的最大值分别为{4,4,6,6,6,5}； 针对数组{2,3,4,2,6,2,5,1}的滑动窗口有以下6个： {[2,3,4],2,6,2,5,1}， {2,[3,4,2],6,2,5,1}， {2,3,[4,2,6],2,5,1}， {2,3,4,[2,6,2],5,1}， {2,3,4,2,[6,2,5],1}， {2,3,4,2,6,[2,5,1]}。
 
-**题解**：使用双端队列存储可能最大的元素下标。
+```
+输入：[2, 3, 4, 2, 6, 2, 5, 1] , k=3
+输出: [4, 4, 6, 6, 6, 5]
+```
+
+**题解**：窗口向右滑动的过程实际上就是将处于窗口的第一个数字删除，同时在窗口的末尾添加一个新的数字，这就可以用双向队列来模拟，**每次把尾部的数字弹出，再把新的数字压入到头部**，然后找队列中最大的元素即可。
+
+为了更快地找到最大的元素，我们可以在队列中**只保留那些可能成为窗口最大元素的数字**，去掉那些不可能成为窗口中最大元素的数字。考虑这样一个情况，如果队列中进来一个较大的数字，那么队列中比这个数更小的数字就不可能再成为窗口中最大的元素了，因为这个大的数字是后进来的，一定会比之前早进入窗口的小的数字要晚离开窗口，那么那些早进入且比较小的数字就“永无出头之日”，所以就可以弹出队列。
+
+于是我们维护一个双向单调队列，**队列放的是可能最大的元素的下标**。我们假设该双端队列的队头是整个队列的最大元素所在下标，至队尾下标代表的元素值依次降低。初始时单调队列为空。随着对数组的遍历过程中，每次插入元素前，首先需要看队头是否还能留在队列中，如果队头下标距离 i 超过了k，则应该出队。同时需要维护队列的单调性，如果nums[i]大于或等于队尾元素下标所对应的值，则当前队尾再也不可能充当某个滑动窗口的最大值了，故需要队尾出队。始终保持队中元素从队头到队尾单调递减。依次遍历一遍数组，每次队头就是每个滑动窗口的最大值所在下标。
+
+时间复杂度分析：每个元素最多入队出队一次，复杂度为O(n)
 
 ```cpp
 class Solution {
 public:
-    // 使用双端队列存储可能最大的元素下标
-    vector<int> maxInWindows(const vector<int>& num, unsigned int size)
-    {
+    vector<int> maxInWindows(vector<int>& nums, int k) {
+        if(nums.empty()) return vector<int>();
+        
         vector<int> res;
-        deque<int> dq;
+        deque<int> q;
         
-        if(num.size() < size || size <= 0)
-            return  res;
-        
-        for(int i = 0; i < num.size(); ++i){
-            //从后面依次弹出队列中比当前num值小的元素，同时保证队列首元素为当前窗口最大值下标
-            while(dq.size() && num[i] >= num[dq.back()])
-                dq.pop_back();
-            
-            //当前窗口移出队首元素所在的位置，即队首元素坐标对应的num不在窗口中，需要弹出
-            while(dq.size() && i-dq.front()+1 > size)
-                dq.pop_front();
-            
-            dq.push_back(i);//把每次滑动的num下标加入队列
-            
-            if(size && i >= size - 1)//当滑动窗口首地址i大于等于size时才开始写入窗口最大值
-                res.push_back(num[dq.front()]);
+        for(int i = 0; i < nums.size(); i++) {
+            while(q.size() && q.front() <= i - k) q.pop_front(); // 若队头已不在窗口中，队头出队
+            while(q.size() && nums[q.back()] <= nums[i]) q.pop_back(); // 维护队列单调性，队尾元素小于当前元素，不可能是最大值，弹出
+            q.push_back(i);
+            if(i >= k - 1) res.push_back(nums[q.front()]); // 窗口中有k个元素时开始，取队头作为窗口最大元素
         }
         return res;
-    }
-    
-    // 暴力求解
-    vector<int> maxInWindows_(const vector<int>& num, unsigned int size)
-    {
-        vector<int> res;
-        if(num.size() < size || size <= 0)
-            return  res;
-        
-        for(int i = 0; i <= num.size() - size; ++i) {
-            res.push_back(getMax(num, i, i + size - 1));
-        }
-        
-        return res;
-    }
-    
-    int getMax(vector<int> num , int low, int high) {
-        int max = 0;
-        for(int i = low; i <= high; ++i) {
-            if(num[i] > max)
-                max = num[i];
-        }
-        
-        return max;
     }
 };
 ```
@@ -3897,7 +3984,7 @@ public:
 
 ## 动态规划和贪心
 
-### 面试题14 剪绳子
+### 面试题14 剪绳子（核心思想：贪心）
 
 【[OJ](https://www.nowcoder.com/practice/57d85990ba5b440ab888fc72b0751bf8?tpId=13&tqId=33257&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking)】
 
@@ -3959,7 +4046,7 @@ public:
 
 
 
-### 面试题46 把数字翻译成字符串⭐️⭐️
+### 面试题46 把数字翻译成字符串（核心思想：DP）⭐️⭐️
 
 【[AcWing](https://www.acwing.com/problem/content/55/)】给定一个数字，我们按照如下规则把它翻译为字符串：0翻译成”a”，1翻译成”b”，……，11翻译成”l”，……，25翻译成”z”。
 
@@ -4007,7 +4094,7 @@ public:
 
 
 
-### 面试题47 礼物的最大价值⭐️⭐️
+### 面试题47 礼物的最大价值（核心思想：DP）⭐️⭐️
 
 【[AcWing](https://www.acwing.com/problem/content/56/)】在一个m×n的棋盘的每一格都放有一个礼物，每个礼物都有一定的价值（价值大于0）。你可以从棋盘的左上角开始拿格子里的礼物，并每次向右或者向下移动一格直到到达棋盘的右下角。给定一个棋盘及其上面的礼物，请计算你最多能拿到多少价值的礼物？
 
@@ -4046,41 +4133,144 @@ public:
 
 
 
-## 发散思维、抽象建模
+### 面试题60 n个骰子的点数（核心思想：DP/DFS）
 
-### 面试题61 扑克牌中的顺子
+【[AcWing](https://www.acwing.com/problem/content/76/)】将一个骰子投掷n次，获得的总点数为s，s的可能范围为n\~6n。掷出某一点数，可能有多种掷法，例如投掷2次，掷出3点，共有[1,2],[2,1]两种掷法。请求出投掷n次，掷出n~6n点分别有多少种掷法。
 
-【[OJ](https://www.nowcoder.com/practice/762836f4d43d43ca9deb273b3de8e1f4?tpId=13&tqId=11198&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking)】
+```
+输入：n=1
+输出：[1, 1, 1, 1, 1, 1]
+解释：投掷1次，可能出现的点数为1-6，共计6种。每种点数都只有1种掷法。所以输出[1, 1, 1, 1, 1, 1]。
 
-先排序，再统计0的个数；求0后面各对数字的差，差以0补上，若0不够用则不是顺子；若一对数字相等，不是顺子。
+输入：n=2
+输出：[1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1]
+解释：投掷2次，可能出现的点数为2-12，共计11种。每种点数可能掷法数目分别为1,2,3,4,5,6,5,4,3,2,1。
+     所以输出[1, 2, 3, 4, 5, 6, 5, 4, 3, 2, 1]。
+```
+
+**题解**：
+
+方法1：DP，时间复杂度O(n^2^)
+
+状态表示：`dp[i][j]`表示前 i 个骰子扔出和为 j 的方案数
+
+状态计算：根据最后一次的点数，划分为6个集合，因为第i个骰子可能扔出1-6的点数，则`dp[i][j]=dp[i-1][j-1]+dp[i-1][j-2]+dp[i-1][j-3]+dp[i-1][j-4]+dp[i-1][j-5]+dp[i-1][j-6]`。最后一次的点数为 k 时的方案数为`dp[i-1][j-k]`，因而状态转移方程为`dp[i][j] = dp[i-1][j-1]+ ... + dp[i-1][j-6]` 
+
+边界条件： 用一个骰子扔出和为0-6的可能数为1，即`dp[1][j] = 1 | j=[1,6]`
 
 ```cpp
 class Solution {
 public:
-    bool IsContinuous( vector<int> numbers ) {
-        if(numbers.empty())
-            return false;
+    vector<int> numberOfDice(int n) {
+        vector<vector<int>> dp(n + 1, vector<int>(6 * n + 1, 0)); // dp[i][j]表示前i个骰子扔出和为j的方案数
+        for(int j = 1; j <= 6; j++) // 用一个骰子扔出和为0-6的可能数为1
+            dp[1][j] = 1;
         
-        sort(numbers.begin(), numbers.end()); // 排序
+        for (int i = 2; i <= n; i++) // i从2开始
+            for (int j = 1; j <= i * 6; j++)
+                for (int k = 1; k <= 6; k++)
+                    if (j >= k) dp[i][j] += dp[i - 1][j - k];
+                        
+        return vector<int>(dp[n].begin() + n, dp[n].end());
+    }
+};
+
+```
+
+方法2：DFS
+
+指数级时间复杂度
+
+dfs(n, sum) 表示前 n 个骰子点数和为 sum 时的方案数
+
+```cpp
+class Solution {
+public:
+    vector<int> numberOfDice(int n) {
+        vector<int>res;
+        for(int i = n; i <= n * 6; i ++) res.push_back(dfs(n,i));
+        return res;
+    }
+    int dfs(int n, int sum){
+        if(sum < 0) return 0; // 和不可能小于0
+        if(n == 0) return !sum; // n=0时，sum不为0则为一合法方案，返回1
+        int res;
+        for(int i = 1; i <= 6; ++i){
+            res += dfs(n-1, sum-i)
+        }
+        return res;
+    }
+};
+```
+
+
+
+### 面试题63 股票的最大利润（核心思想：贪心）
+
+【[AcWing](https://www.acwing.com/problem/content/79/)】假设把某股票的价格按照时间先后顺序存储在数组中，请问买卖 **一次** 该股票可能获得的利润是多少？
+
+例如一只股票在某些时间节点的价格为[9, 11, 8, 5, 7, 12, 16, 14]。如果我们能在价格为5的时候买入并在价格为16时卖出，则能收获最大的利润11。
+
+```
+输入：[9, 11, 8, 5, 7, 12, 16, 14]
+输出：11
+```
+
+**题解**：贪心思想，时间复杂度O(n)
+
+由于只允许做一次股票买卖交易，枚举每一天作为卖出的日子，买入日子一定在卖出日子之前，为了获利最多，希望买入的日子的股票价格尽可能低。暴力做法是O(n^2^)，卖出时遍历前面 i 天的价格，找出最小值。可以维护一个最小值变量 min，存储前 i 天价格最小值，从而省去第二次遍历，时间复杂度降低到O(n)。
+
+```cpp
+class Solution {
+public:
+    int maxDiff(vector<int>& nums) {
+        if(nums.empty()) return 0;
         
-        int zeroCnt = 0;
-        for(int number : numbers) { // 统计0的个数
-            if(number == 0)
-                zeroCnt++;
+        int res = 0;
+        for(int i = 1, minv = nums[0]; i < nums.size(); i++) { // 遍历数组，j为最低购入价格
+            minv = min(minv, nums[i]); // 记录第0-i天最小的购入价格
+            if(minv < nums[i])
+                res = max(res, nums[i] - minv); // 记录0-i天最大的利润
+        }
+        return res;
+    }
+};
+```
+
+
+
+## 发散思维、抽象建模
+
+### 面试题61 扑克牌中的顺子
+
+【[OJ](https://www.nowcoder.com/practice/762836f4d43d43ca9deb273b3de8e1f4?tpId=13&tqId=11198&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking) / [AcWing](https://www.acwing.com/problem/content/77/)】从扑克牌中随机抽5张牌，判断是不是一个顺子，即这5张牌是不是连续的。2～10为数字本身，A为1，J为11，Q为12，K为13，大小王可以看做任意数字。为了方便，大小王均以0来表示，并且假设这副牌中大小王均有两张。
+
+```
+输入：[8,9,10,11,12]
+输出：true
+
+输入：[0,8,9,11,12]
+输出：true
+```
+
+**题解**：
+
+先排序，再判断除0以外是否有重复，有重复则不可能是顺子，最后判断除0外最大数与组小数的差是否小于等于4，等于4时不需要用0补，小于4时需要用0补，大于4则不可能是顺子。
+
+```cpp
+class Solution {
+public:
+    bool isContinuous( vector<int> nums ) {
+        if(nums.empty()) return false;
+        sort(nums.begin(), nums.end()); // 先排序
+        for(int i = 1; i < nums.size(); i++) { // 判断除0以外的数是否有重复
+            if(nums[i] && nums[i] == nums[i-1])
+                return false; // 有重复则不可能是顺子
         }
         
-        for(int i = zeroCnt; i < numbers.size(); ++i) {
-            int diff = numbers[i+1] - numbers[i] - 1;
-            if(diff == -1) { // 两数相等
-                return false;
-            } else{
-                zeroCnt -= diff; // 使用0来填补空缺
-                if(zeroCnt < 0) // 0不够用了
-                    return false;
-            }
+        for(auto x :nums) { // 判断除0以外最小的数与最大的数的差值是否小于等于4
+            if(x) return nums.back() - x <= 4; // 差值小于等于4则肯定是顺子
         }
-        
-        return true;
     }
 };
 ```
@@ -4089,7 +4279,14 @@ public:
 
 ### 面试题64 求1+2+3+...+n
 
-【[OJ](https://www.nowcoder.com/practice/7a0da8fc483247ff8800059e12d7caf1?tpId=13&tqId=11200&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking)】
+【[OJ](https://www.nowcoder.com/practice/7a0da8fc483247ff8800059e12d7caf1?tpId=13&tqId=11200&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking) / [AcWing](https://www.acwing.com/problem/content/description/80/)】求1+2+…+n,要求不能使用乘除法、for、while、if、else、switch、case等关键字及条件判断语句（A?B:C）。
+
+```
+输入：10
+输出：55
+```
+
+**题解**：
 
 使用递归解法最重要的是指定返回条件，但是本题无法直接使用 if 语句来指定返回条件。
 
@@ -4114,7 +4311,8 @@ class Solution {
 public:
     int Sum_Solution(int n) {
         int sum = n;
-        sum && (sum += Sum_Solution(n - 1));
+        // if(!sum) return 0; // 到0时返回
+        sum && (sum += Sum_Solution(n - 1)); // sum = 0 时，后半句不执行，即返回0
         return sum;
     }
 };
@@ -4124,7 +4322,14 @@ public:
 
 ### 面试题65 不用加减乘除做加法
 
-【[OJ](https://www.nowcoder.com/practice/59ac416b4b944300b617d4f7f111b215?tpId=13&tqId=11201&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking)】
+【[OJ](https://www.nowcoder.com/practice/59ac416b4b944300b617d4f7f111b215?tpId=13&tqId=11201&tPage=1&rp=1&ru=/ta/coding-interviews&qru=/ta/coding-interviews/question-ranking) / [AcWIng](https://www.acwing.com/problem/content/description/81/)】写一个函数，求两个整数之和，要求在函数体内不得使用＋、－、×、÷ 四则运算符号。
+
+```
+输入：num1 = 1 , num2 = 2
+输出：3
+```
+
+**题解**：
 
 首先看十进制是如何做的： 5+7=12，三步走 
 
@@ -4147,10 +4352,11 @@ class Solution {
 public:
     int Add(int num1, int num2)
     {
-        while (num2!=0) {
-            int temp = num1^num2;
-            num2 = (num1&num2) << 1;
-            num1 = temp;
+        while (num2) { // 进位为0时退出循环
+            int sum = num1 ^ num2; // 计算不进位时的和，不进位时对应的两位一定不同
+            int carry = (num1 & num2) << 1; // 计算进位， 对应的两位都为1才会进位，因而使用&运算
+            num1 = sum;
+            num2 = carry; // 进位结束时num2为0
         }
         return num1;
     }
