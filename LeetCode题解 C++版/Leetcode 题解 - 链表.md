@@ -184,7 +184,7 @@ public:
 
 [Leetcode 237. 删除链表中的节点](https://leetcode-cn.com/problems/delete-node-in-a-linked-list/)
 
-删除链表中的某个节点，此节点不会是尾节点
+删除链表中的某个节点，此节点**不会是尾节点**
 
 **题解**：
 

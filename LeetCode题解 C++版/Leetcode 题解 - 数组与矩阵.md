@@ -7,22 +7,24 @@
 [Leetcode](https://leetcode.com/problems/move-zeroes/description/) / [力扣](https://leetcode-cn.com/problems/move-zeroes/description/)
 
 ```html
-For example, given nums = [0, 1, 0, 3, 12], after calling your function, nums should be [1, 3, 12, 0, 0].
+For example, given nums = [0, 1, 0, 3, 12], 
+after calling your function, nums should be [1, 3, 12, 0, 0].
 ```
 
-```java
-public void moveZeroes(int[] nums) {
-    int idx = 0;
-    for (int num : nums) {
-        if (num != 0) {
-            nums[idx++] = num;
+**题解**：
+
+```cpp
+class Solution {
+public:
+    void moveZeroes(vector<int>& nums) {
+        for(int i = 0, j = 0; i < nums.size(); i++) {
+            if(nums[i] != 0) swap(nums[i], nums[j++]);
         }
     }
-    while (idx < nums.length) {
-        nums[idx++] = 0;
-    }
-}
+};
 ```
+
+
 
 # 2. 改变矩阵维度
 
@@ -612,6 +614,92 @@ public:
                 res.push_back(i + 1);
         }
         return res;
+    }
+};
+```
+
+
+
+# 16. 修改一个数成为非递减数组
+
+665\. Non-decreasing Array (Easy)
+
+[Leetcode](https://leetcode.com/problems/non-decreasing-array/description/) / [力扣](https://leetcode-cn.com/problems/non-decreasing-array/description/)
+
+```html
+Input: [4,2,3]
+Output: True
+Explanation: You could modify the first 4 to 1 to get a non-decreasing array.
+```
+
+题目描述：判断一个数组是否能只修改一个数就成为非递减数组。
+
+**题解**：
+
+在出现 nums[i] < nums[i - 1] 时，需要考虑的是应该修改数组的哪个数，使得本次修改能使 i 之前的数组成为非递减数组，并且   **不影响后续的操作**  。优先考虑令 nums[i - 1] = nums[i]，因为如果修改 nums[i] = nums[i - 1] 的话，那么 nums[i] 这个数会变大，就有可能比 nums[i + 1] 大，从而影响了后续操作。还有一个比较特别的情况就是 nums[i] < nums[i - 2]，修改 nums[i - 1] = nums[i] 不能使数组成为非递减数组，只能修改 nums[i] = nums[i - 1]。
+
+举例说明：
+
+**4**，2，3
+
+-1，**4**，2，3
+
+2，3，3，**2**，4
+
+我们通过分析上面三个例子可以发现，后面的数字小于前面的数字产生冲突后，有时候需要修改前面较大的数字(比如前两个例子需要修改4)，有时候却要修改后面较小的那个数字(比如前第三个例子需要修改2)，那么有什么内在规律吗？是有的，判断**修改哪个数字其实跟再前面一个数(nums[i-2])的大小有关系**：
+
+- 首先如果再前面的数不存在，比如例子1，4前面没有数字了，我们直接修改前面的数字为当前的数字2即可。
+- 而当再前面的数字存在，并且小于当前数时，比如例子2，-1小于2，我们还是需要修改前面的数字4为当前数字2；
+- 如果再前面的数大于当前数，比如例子3，3大于2，我们需要修改当前数2为前面的数3。
+
+由于我们只有一次修改的机会，所以用一个变量cnt，初始化为1，修改数字后cnt自减1，当下次再需要修改时，如果cnt已经为0了，直接返回false。
+
+```cpp
+class Solution {
+public:
+    bool checkPossibility(vector<int>& nums) {
+        if(nums.empty()) return false;
+        int cnt = 0;
+        for(int i = 1; i < nums.size(); i++) {
+            if(nums[i] < nums[i - 1]) { // 递减
+                if(cnt > 1) return false; // 修改超过一次，直接返回
+                // nums[i-2]不存在或nums[i-2]小于当前数，修改nums[i-1]为当前数
+                if(i == 1 || nums[i] >= nums[i - 2]) nums[i - 1] = nums[i]; 
+                else nums[i] = nums[i - 1]; // 否则修改当前数为nums[i-1]
+                cnt++; // 记录修改了一次
+            }
+        }
+        return cnt <= 1;
+    }
+};
+```
+
+
+
+# 17. 子数组最大的和
+
+53\. Maximum Subarray (Easy)
+
+[Leetcode](https://leetcode.com/problems/maximum-subarray/description/) / [力扣](https://leetcode-cn.com/problems/maximum-subarray/description/)
+
+```html
+For example, given the array [-2,1,-3,4,-1,2,1,-5,4],
+the contiguous subarray [4,-1,2,1] has the largest sum = 6.
+```
+
+**题解**：定义两个变量 res 和 curSum，其中 res 保存最终要返回的结果，即最大的子数组之和，curSum 初始值为0，每遍历一个数字 num，比较 curSum + num 和 num 中的较大值存入 curSum，然后再把 res 和 curSum 中的较大值存入 res，以此类推直到遍历完整个数组，可得到最大子数组的值存在 res 中。
+
+```cpp
+class Solution {
+public:
+    int maxSubArray(vector<int>& nums) {
+        if(nums.empty()) return 0;
+        int maxv = INT_MIN, sum = 0;
+        for(int num : nums) {
+            sum = max(num, sum + num); // 取num和num+sum的最大值
+            maxv = max(sum, maxv); // 取当前最大和与当前和的最大值
+        }
+        return maxv;
     }
 };
 ```

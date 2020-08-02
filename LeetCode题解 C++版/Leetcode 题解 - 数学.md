@@ -160,15 +160,11 @@ int lcm(int a, int b) {
 
 乘 2 和除 2 都可以转换为移位操作。
 
-```java
+```cpp
 public int gcd(int a, int b) {
-    if (a < b) {
-        return gcd(b, a);
-    }
-    if (b == 0) {
-        return a;
-    }
-    boolean isAEven = isEven(a), isBEven = isEven(b);
+    if (a < b) return gcd(b, a);
+    if (b == 0) return a;
+    bool isAEven = isEven(a), isBEven = isEven(b);
     if (isAEven && isBEven) {
         return 2 * gcd(a >> 1, b >> 1);
     } else if (isAEven && !isBEven) {
@@ -185,37 +181,56 @@ public int gcd(int a, int b) {
 
 # 进制转换
 
+<img src="https://gitee.com//MrRen-sdhm/Images/raw/master/img/20200731105030" alt="img" style="zoom: 50%;" />
+
 ## 1. 7 进制
 
 504\. Base 7 (Easy)
 
 [Leetcode](https://leetcode.com/problems/base-7/description/) / [力扣](https://leetcode-cn.com/problems/base-7/description/)
 
-```java
-public String convertToBase7(int num) {
-    if (num == 0) {
-        return "0";
-    }
-    StringBuilder sb = new StringBuilder();
-    boolean isNegative = num < 0;
-    if (isNegative) {
-        num = -num;
-    }
-    while (num > 0) {
-        sb.append(num % 7);
-        num /= 7;
-    }
-    String ret = sb.reverse().toString();
-    return isNegative ? "-" + ret : ret;
-}
+给定一个整数，将其转化为7进制，并以字符串形式输出。
+
+```
+输入: 101
+输出: "203"
 ```
 
-Java 中 static String toString(int num, int radix) 可以将一个整数转换为 radix 进制表示的字符串。
+**题解**：
 
-```java
-public String convertToBase7(int num) {
-    return Integer.toString(num, 7);
-}
+先用100除以7，商14余3，然后用14除以7，商2余0，再用2除以7，商0余2，得到203。这种方法更适合于代码实现，要注意的是，我们要处理好负数的情况。
+
+方法1：迭代
+
+```cpp
+class Solution {
+public:
+    string convertToBase7(int num) {
+        if(num == 0) return "0";
+        bool positive = num > 0; // 记录num的正负号
+        string res = "";
+        while(num) {
+            res = to_string(abs(num % 7)) + res; // 新计算出的余数放前面
+            num /= 7; // 求商
+        }
+        return positive ? res : "-" + res; // 负数加上负号
+    }
+};
+```
+
+
+
+方法2：递归
+
+```cpp
+class Solution {
+public:
+    string convertToBase7(int num) {
+        if (num < 0) return "-" + convertToBase7(-1 * num);
+        if (num < 7) return to_string(num);
+        return convertToBase7(num / 7) + to_string(num % 7);
+    }
+};
 ```
 
 
@@ -240,19 +255,23 @@ Output:
 "ffffffff"
 ```
 
-负数要用它的补码形式。
+**题解**：
 
-```java
-public String toHex(int num) {
-    char[] map = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
-    if (num == 0) return "0";
-    StringBuilder sb = new StringBuilder();
-    while (num != 0) {
-        sb.append(map[num & 0b1111]);
-        num >>>= 4; // 因为考虑的是补码形式，因此符号位就不能有特殊的意义，需要使用无符号右移，左边填 0
+采取位操作的思路，每次取出最右边四位，找到对应的字母加入结果，然后num像右平移四位，循环停止的条件是num为0，或者是已经循环了7次。负数要用它的补码形式。
+
+```cpp
+class Solution {
+public:
+    string toHex(int num) {
+        string res = "", str = "0123456789abcdef";
+        for(int i = 0; num != 0 && i < 8; i++) {
+            res = str[(num & 0xf)] + res; // 取最右侧四位，得到对应的16进制数
+            //printf("%d %c\n", num & 0xf, str[(num & 0xf)]);
+            num >>= 4; // num右移四位，移除刚刚取出的四位
+        }
+        return res.empty() ? "0" : res;
     }
-    return sb.reverse().toString();
-}
+};
 ```
 
 
@@ -262,6 +281,8 @@ public String toHex(int num) {
 168\. Excel Sheet Column Title (Easy)
 
 [Leetcode](https://leetcode.com/problems/excel-sheet-column-title/description/) / [力扣](https://leetcode-cn.com/problems/excel-sheet-column-title/description/)
+
+给定一个正整数，返回它在 Excel 表中相对应的列名称。
 
 ```html
 1 -> A
@@ -273,16 +294,39 @@ public String toHex(int num) {
 28 -> AB
 ```
 
+**题解**：
+
 因为是从 1 开始计算的，而不是从 0 开始，因此需要对 n 执行 -1 操作。
 
-```java
-public String convertToTitle(int n) {
-    if (n == 0) {
-        return "";
+对于26来说，我们先让n自减1，变成25，然后再对26取余，得到25，此时再加上字符A，就可以得到字符Z了。这种方法对能被26整除的数和不能被26整除的数都成立。
+
+写法1：迭代
+
+```cpp
+class Solution {
+public:
+    string convertToTitle(int n) {
+        string res;
+        while (n) {
+            res = char(--n % 26 + 'A') + res; // n先自减1再求余，以处理被26整除的情况
+            n /= 26; // 求商
+        }
+        return res; // 翻转
     }
-    n--;
-    return convertToTitle(n / 26) + (char) (n % 26 + 'A');
-}
+};
+```
+
+
+
+写法2：递归
+
+```cpp
+class Solution {
+public:
+    string convertToTitle(int n) {
+        return n == 0 ? "" : convertToTitle(n / 26) + (char)(--n % 26 + 'A');
+    }
+};
 ```
 
 
@@ -295,15 +339,52 @@ public String convertToTitle(int n) {
 
 [Leetcode](https://leetcode.com/problems/factorial-trailing-zeroes/description/) / [力扣](https://leetcode-cn.com/problems/factorial-trailing-zeroes/description/)
 
-尾部的 0 由 2 * 5 得来，2 的数量明显多于 5 的数量，因此只要统计有多少个 5 即可。
+```
+输入: 3
+输出: 0
+解释: 3! = 6, 尾数中没有零。
+
+输入: 5
+输出: 1
+解释: 5! = 120, 尾数中有 1 个零.
+```
+
+**题解**：
+
+尾部的 0 由 2 * 5 得来，2 的数量明显多于 5 的数量（比如1到 10 中有2个5，5个2），因此只要统计有多少个 5 即可。
 
 对于一个数 N，它所包含 5 的个数为：N/5 + N/5<sup>2</sup> + N/5<sup>3</sup> + ...，其中 N/5 表示不大于 N 的数中 5 的倍数贡献一个 5，N/5<sup>2</sup> 表示不大于 N 的数中 5<sup>2</sup> 的倍数再贡献一个 5 ...。
 
-```java
-public int trailingZeroes(int n) {
-    return n == 0 ? 0 : n / 5 + trailingZeroes(n / 5);
-}
+写法1：迭代
+
+```cpp
+class Solution {
+public:
+    int trailingZeroes(int n) {
+        int res = 0;
+        while(n) {
+            res += n / 5;
+            n /= 5;
+        }
+        return res;
+    }
+};
 ```
+
+
+
+写法2：递归
+
+```cpp
+class Solution {
+public:
+    int trailingZeroes(int n) {
+        return n == 0 ? 0 : n / 5 + trailingZeroes(n / 5);
+    }
+};
+```
+
+
 
 如果统计的是 N! 的二进制表示中最低位 1 的位置，只要统计有多少个 2 即可，该题目出自 [编程之美：2.2](#) 。和求解有多少个 5 一样，2 的个数为 N/2 + N/2<sup>2</sup> + N/2<sup>3</sup> + ...
 
@@ -323,22 +404,52 @@ b = "1"
 Return "100".
 ```
 
-```java
-public String addBinary(String a, String b) {
-    int i = a.length() - 1, j = b.length() - 1, carry = 0;
-    StringBuilder str = new StringBuilder();
-    while (carry == 1 || i >= 0 || j >= 0) {
-        if (i >= 0 && a.charAt(i--) == '1') {
-            carry++;
+**题解**：
+
+用了两个指针分别指向a和b的末尾，然后每次取出一个字符，转为数字，若无法取出字符则按0处理，然后定义进位carry，初始化为0，将三者加起来，对2取余即为当前位的数字，对2取商即为当前进位的值，记得最后还要判断下carry，如果为1的话，要在结果最前面加上一个1。
+
+写法1：
+
+```cpp
+class Solution1 {
+public:
+    string addBinary(string a, string b) {
+        string res = "";
+        if(a.empty() || b.empty()) return res;
+        int i = a.size() - 1, j = b.size() - 1, carry = 0; // 两指针分别指向两字符串的末尾
+        while(i >= 0 || j >= 0) {
+            int p = i >= 0 ? a[i--] - '0' : 0; // 若指针仍指向字符串内字符，计算字符对应的数字
+            int q = j >= 0 ? b[j--] - '0' : 0; // 否则填补0
+            int sum = p + q + carry; // 计算当前和
+            res = to_string(sum % 2) + res; // 将余数补到现有字符串前面
+            carry = sum / 2; // 计算进位
         }
-        if (j >= 0 && b.charAt(j--) == '1') {
-            carry++;
-        }
-        str.append(carry % 2);
-        carry /= 2;
+        if(carry == 1) res = '1' + res; // 最后还要进位
+        return res;
     }
-    return str.reverse().toString();
-}
+};
+```
+
+
+
+写法2：简洁
+
+```cpp
+class Solution {
+public:
+    string addBinary(string a, string b) {
+        string res = "";
+        if(a.empty() || b.empty()) return res;
+        int i = a.size() - 1, j = b.size() - 1, carry = 0; // 两指针分别指向两字符串的末尾
+        while (carry == 1 || i >= 0 || j >= 0) { // 最后carry=1时再计算一次
+            if (i >= 0 && a[i--] == '1') carry++; // 当前位为1进位加1
+            if (j >= 0 && b[j--] == '1') carry++; // 指针超出字符串不做处理
+            res = to_string(carry % 2) + res; // 将余数补到现有字符串前面
+            carry /= 2; // 计算进位
+        }
+        return res;
+    }
+};
 ```
 
 
@@ -349,27 +460,34 @@ public String addBinary(String a, String b) {
 
 [Leetcode](https://leetcode.com/problems/add-strings/description/) / [力扣](https://leetcode-cn.com/problems/add-strings/description/)
 
-字符串的值为非负整数。
+给定两个字符串形式的非负整数 `num1` 和`num2` ，计算它们的和。字符串的值为非负整数。
 
-```java
-public String addStrings(String num1, String num2) {
-    StringBuilder str = new StringBuilder();
-    int carry = 0, i = num1.length() - 1, j = num2.length() - 1;
-    while (carry == 1 || i >= 0 || j >= 0) {
-        int x = i < 0 ? 0 : num1.charAt(i--) - '0';
-        int y = j < 0 ? 0 : num2.charAt(j--) - '0';
-        str.append((x + y + carry) % 10);
-        carry = (x + y + carry) / 10;
+**题解**：和二进制字符串相加类似，一位一位相加，然后算和算进位，最后根据进位情况看需不需要补一个高位（有高位需多进行一次循环处理）
+
+```cpp
+class Solution {
+public:
+    string addStrings(string num1, string num2) {
+        string res = "";
+        if(num1.empty() || num2.empty()) return res;
+        int i = num1.size() - 1, j = num2.size() - 1, carry = 0;
+        while(i >= 0 || j >= 0 || carry == 1) {
+            int p = i >= 0 ? num1[i--] - '0' : 0;
+            int q = j >= 0 ? num2[j--] - '0' : 0;
+            int sum = p + q + carry;
+            res = to_string(sum % 10) + res;
+            carry = sum / 10;
+        }
+        return res;
     }
-    return str.reverse().toString();
-}
+};
 ```
 
 
 
 # 相遇问题
 
-## 1. 改变数组元素使所有的数组元素都相等
+## 1. 改变数组元素使所有的数组元素都相等✏️
 
 462\. Minimum Moves to Equal Array Elements II (Medium)
 
@@ -569,10 +687,13 @@ public boolean isPerfectSquare(int num) {
 
 [Leetcode](https://leetcode.com/problems/power-of-three/description/) / [力扣](https://leetcode-cn.com/problems/power-of-three/description/)
 
-```java
-public boolean isPowerOfThree(int n) {
-    return n > 0 && (1162261467 % n == 0);
-}
+```cpp
+class Solution {
+public:
+    bool isPowerOfThree(int n) {
+        return n > 0 && (1162261467 % n == 0);
+    }
+};
 ```
 
 

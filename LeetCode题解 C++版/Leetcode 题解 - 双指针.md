@@ -479,3 +479,93 @@ public:
 };
 ```
 
+
+
+# 10. 判断是否为子序列
+
+392\. Is Subsequence (Medium)
+
+[Leetcode](https://leetcode.com/problems/is-subsequence/description/) / [力扣](https://leetcode-cn.com/problems/is-subsequence/description/)
+
+```html
+s = "abc", t = "ahbgdc"
+Return true.
+```
+
+**题解**：
+
+方法1：双指针
+
+用两个指针i, j分别指向字符串s和t，然后如果字符相等，则i和j自增1，反之只有j自增1，最后看i是否等于s的长度，等于说明s已经遍历完了，而且字符都有在t中出现过
+
+```cpp
+class Solution {
+public:
+    bool isSubsequence(string s, string t) {
+        int i = 0;
+        for(int j = 0; j < t.size(); j++) {
+            if(s[i] == t[j]) i++;
+        }
+        return i == s.size();
+    }
+};
+```
+
+
+
+方法2：哈希表+二分查找
+
+题目中的 Follow up 说如果有大量的字符串s，问我们如何进行优化。那么既然字符串t始终保持不变，我们就可以在t上做一些文章。子序列虽然不需要是连着的子串，但是字符之间的顺序是需要的，那么我们可以建立字符串t中的每个字符跟其位置直接的映射，由于t中可能会出现重复字符，所以把相同的字符出现的所有位置按顺序加到一个数组中，所以就是用 HashMap 来建立每个字符和其位置数组之间的映射。然后遍历字符串s中的每个字符，对于每个遍历到的字符c，我们到 HashMap 中的对应的字符数组中去搜索，由于位置数组是有序的，我们使用二分搜索来加快搜索速度，这里需要注意的是，由于子序列是有顺序要求的，所以需要一个变量 pre 来记录当前匹配到t字符串中的位置，对于当前s串中的字符c，即便在t串中存在，但是若其在位置 pre 之前，也是不能匹配的。所以我们可以使用 uppper_bound() 来二分查找第一个大于 pre 的位置，若不存在，直接返回 false，否则将 pre 更新为二分查找的结果并继续循环即可，参见代码如下：
+
+```cpp
+class Solution {
+public:
+    bool isSubsequence(string s, string t) {
+        int pre = -1, n = t.size();
+        unordered_map<char, vector<int>> char2pos;
+        for (int i = 0; i < n; ++i) char2pos[t[i]].push_back(i);
+        for (char c : s) {
+            auto it = upper_bound(char2pos[c].begin(), char2pos[c].end(), pre);
+            if (it == char2pos[c].end()) return false;
+            pre = *it;
+        }
+        return true;
+    }
+};
+```
+
+
+
+方法3：[DP](https://leetcode-cn.com/problems/is-subsequence/solution/pan-duan-zi-xu-lie-by-leetcode-solution/)
+
+```cpp
+class Solution {
+public:
+    bool isSubsequence(string s, string t) {
+        int n = s.size(), m = t.size();
+
+        vector<vector<int> > f(m + 1, vector<int>(26, 0));
+        for (int i = 0; i < 26; i++) {
+            f[m][i] = m;
+        }
+
+        for (int i = m - 1; i >= 0; i--) {
+            for (int j = 0; j < 26; j++) {
+                if (t[i] == j + 'a')
+                    f[i][j] = i;
+                else
+                    f[i][j] = f[i + 1][j];
+            }
+        }
+        int add = 0;
+        for (int i = 0; i < n; i++) {
+            if (f[add][s[i] - 'a'] == m) {
+                return false;
+            }
+            add = f[add][s[i] - 'a'] + 1;
+        }
+        return true;
+    }
+};
+```
+

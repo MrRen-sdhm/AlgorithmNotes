@@ -1706,6 +1706,7 @@ class Solution {
 public:
     int maxProfit(vector<int>& prices) {
         int n = prices.size();
+        if(n == 0) return 0;
         int res = 0, minval = INT_MAX;
         for(int i = 0; i < n; i++) {
             minval = min(minval, prices[i]);
