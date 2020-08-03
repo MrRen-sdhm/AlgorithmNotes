@@ -487,7 +487,7 @@ public:
 
 # 相遇问题
 
-## 1. 改变数组元素使所有的数组元素都相等✏️
+## 1. 改变数组元素使所有的数组元素都相等⭐️
 
 462\. Minimum Moves to Equal Array Elements II (Medium)
 
@@ -508,79 +508,98 @@ Only two moves are needed (remember each move increments or decrements one eleme
 
 每次可以对一个数组元素加一或者减一，求最小的改变次数。
 
-这是个典型的相遇问题，移动距离最小的方式是所有元素都移动到中位数。理由如下：
+**题解**：
+
+这是个典型的相遇问题，移动距离最小的方式是所有元素都移动到**中位数**。
+
+方法1：
+
+先排序，时间复杂度O(NlogN)
 
 设 m 为中位数。a 和 b 是 m 两边的两个元素，且 b > a。要使 a 和 b 相等，它们总共移动的次数为 b - a，这个值等于 (b - m) + (m - a)，也就是把这两个数移动到中位数的移动次数。
 
 设数组长度为 N，则可以找到 N/2 对 a 和 b 的组合，使它们都移动到 m 的位置。
 
-**解法 1**  
-
-先排序，时间复杂度：O(NlogN)
-
-```java
-public int minMoves2(int[] nums) {
-    Arrays.sort(nums);
-    int move = 0;
-    int l = 0, h = nums.length - 1;
-    while (l <= h) {
-        move += nums[h] - nums[l];
-        l++;
-        h--;
+```cpp
+class Solution {
+public:
+    int minMoves2(vector<int>& nums) {
+        if(nums.empty()) return 0;
+        sort(nums.begin(), nums.end()); // 排序
+        int i = 0, j = nums.size() - 1, res = 0;
+        while(i < j) res += nums[j--] - nums[i++]; // 统计各对元素的差值和
+        return res;
     }
-    return move;
-}
+};
 ```
 
-**解法 2**  
 
-使用快速选择找到中位数，时间复杂度 O(N)
 
-```java
-public int minMoves2(int[] nums) {
-    int move = 0;
-    int median = findKthSmallest(nums, nums.length / 2);
-    for (int num : nums) {
-        move += Math.abs(num - median);
+方法2：
+
+排序后直接计算各数与中位数的差值，相加，时间复杂度O(NlogN)
+
+```cpp
+class Solution {
+public:
+    int minMoves2(vector<int>& nums) {
+        if(nums.empty()) return 0;
+        sort(nums.begin(), nums.end()); // 排序
+        int mid = nums[nums.size() / 2], res = 0; // 取中位数 
+        for(int num : nums) res += abs(num - mid); // 统计与中位数的差值和
+        return res;
     }
-    return move;
-}
+};
+```
 
-private int findKthSmallest(int[] nums, int k) {
-    int l = 0, h = nums.length - 1;
-    while (l < h) {
-        int j = partition(nums, l, h);
-        if (j == k) {
-            break;
-        }
-        if (j < k) {
-            l = j + 1;
-        } else {
-            h = j - 1;
-        }
+
+
+方法3：
+
+使用快速选择算法找中位数，时间复杂度 O(N)
+
+```cpp
+class Solution {
+public:
+    int minMoves2(vector<int>& nums) {
+        if(nums.empty()) return 0;
+        qselect(nums, 0, nums.size() - 1, nums.size() / 2 + 1); // 中位数是第len/2+1个数
+        int mid = nums[nums.size() / 2], res = 0; // 第len/2+1个数在数组中的位置为len/2，数组下标从0开始
+        for(int num : nums)  res += abs(num - mid); // 统计各数与中位数的差值和
+        return res;
     }
-    return nums[k];
-}
 
-private int partition(int[] nums, int l, int h) {
-    int i = l, j = h + 1;
-    while (true) {
-        while (nums[++i] < nums[l] && i < h) ;
-        while (nums[--j] > nums[l] && j > l) ;
-        if (i >= j) {
-            break;
+    void qselect(vector<int>& q, int l, int r, int k) { // 快速选择，找出数组的第k个数，其下标为k-1
+        if(l >= r) return;
+        int i = l - 1, j = r + 1, x = q[l + r >> 1];
+        while(i < j) {
+            while(q[++i] < x);
+            while(q[--j] > x);
+            if(i < j) swap(q[i], q[j]);
         }
-        swap(nums, i, j);
+        if(j + 1 >= k) qselect(q, l, j, k);
+        else qselect(q, j + 1, r, k);
     }
-    swap(nums, l, j);
-    return j;
-}
+};
+```
 
-private void swap(int[] nums, int i, int j) {
-    int tmp = nums[i];
-    nums[i] = nums[j];
-    nums[j] = tmp;
-}
+
+
+方法4：
+
+使用STL库函数nth_element找到中位数
+
+```cpp
+class Solution {
+public:
+    int minMoves2(vector<int>& nums) {
+        if(nums.empty()) return 0;
+        int res = 0, mid = nums.size() / 2;
+        nth_element(nums.begin(), nums.begin() + mid, nums.end()); // 类似快速选择
+        for(int num : nums) res += abs(num - nums[mid]); // 统计与中位数的差值和
+        return res;
+    }
+};
 ```
 
 
@@ -651,7 +670,7 @@ public:
 
 # 其它
 
-## 1. 平方数
+## 1. 完全平方数
 
 367\. Valid Perfect Square (Easy)
 
@@ -662,21 +681,68 @@ Input: 16
 Returns: True
 ```
 
-平方序列：1,4,9,16,..
+**题解**：
 
-间隔：3,5,7,...
+方法1：
+
+平方序列：0,1,4,9,16,..
+
+间隔：1,3,5,7,...
 
 间隔为等差数列，使用这个特性可以得到从 1 开始的平方序列。
 
-```java
-public boolean isPerfectSquare(int num) {
-    int subNum = 1;
-    while (num > 0) {
-        num -= subNum;
-        subNum += 2;
+```cpp
+class Solution {
+public:
+    bool isPerfectSquare(int num) {
+        int subnum = 1;
+        while(num > 0) {
+            num -= subnum;
+            subnum += 2;
+        }
+        return num == 0;
     }
-    return num == 0;
-}
+};
+```
+
+
+
+方法2：
+
+从1搜索到 sqrt(num)，看有没有平方正好等于 num 的数，时间复杂度O(sqrt(n))
+
+```cpp
+class Solution {
+public:
+    bool isPerfectSquare(int num) {
+        for (int i = 1; i <= num / i; ++i) {
+            if (i * i == num) return true;
+        }
+        return false;
+    }
+};
+```
+
+
+
+方法3：
+
+二分查找，时间复杂度O(log(n))
+
+```cpp
+class Solution {
+public:
+    bool isPerfectSquare(int num) {
+        long long l = 0, r = num;
+        while (l <= r) {
+            long long mid = l + (r - l) / 2, t = mid * mid;
+            if (t == num) return true;
+            if (t > num) r = mid - 1;
+            else l = mid + 1;
+        }
+        return false;
+    }
+};
 ```
 
 
@@ -687,11 +753,33 @@ public boolean isPerfectSquare(int num) {
 
 [Leetcode](https://leetcode.com/problems/power-of-three/description/) / [力扣](https://leetcode-cn.com/problems/power-of-three/description/)
 
+**题解**：
+
+方法1：
+
+由于输入是int，正数范围是0-231，在此范围中允许的最大的3的次方数为319=1162261467，那么我们只要看这个数能否被n整除即可
+
 ```cpp
 class Solution {
 public:
     bool isPowerOfThree(int n) {
         return n > 0 && (1162261467 % n == 0);
+    }
+};
+```
+
+
+
+方法2：
+
+最直接的方法就是不停地除以3，看最后的迭代商是否为1，要注意考虑输入是负数和0的情况。
+
+```c
+class Solution {
+public:
+    bool isPowerOfThree(int n) {
+        while(n && n % 3 == 0) n /= 3;
+        return n == 1;
     }
 };
 ```
@@ -709,28 +797,61 @@ Input: [1,2,3,4]
 Output: 24
 ```
 
-```java
-public int maximumProduct(int[] nums) {
-    int max1 = Integer.MIN_VALUE, max2 = Integer.MIN_VALUE, max3 = Integer.MIN_VALUE, min1 = Integer.MAX_VALUE, min2 = Integer.MAX_VALUE;
-    for (int n : nums) {
-        if (n > max1) {
-            max3 = max2;
-            max2 = max1;
-            max1 = n;
-        } else if (n > max2) {
-            max3 = max2;
-            max2 = n;
-        } else if (n > max3) {
-            max3 = n;
-        }
+**题解**：
 
-        if (n < min1) {
-            min2 = min1;
-            min1 = n;
-        } else if (n < min2) {
-            min2 = n;
-        }
+方法1：
+
+排序，时间复杂度O(nlogn)
+
+- 如果全是正数，最后三个数相乘便是最大值。
+
+- 如果全是负数，三个负数相乘还是负数，为了让负数最大，那么其绝对值就该最小，而负数排序后绝对值小的都在末尾，所以是末尾三个数字相乘，这个跟全是正数的情况一样。
+
+- 那么重点在于前半段是负数，后半段是正数，那么最好的情况肯定是两个最小的负数相乘得到一个正数，然后跟一个最大的正数相乘，这样得到的肯定是最大的数，所以我们让**前两个数相乘，再和数组的最后一个数字相乘**，就可以得到这种情况下的最大的乘积。
+
+实际上我们并不用分情况讨论数组的正负，只要把这两种情况的乘积都算出来，比较二者取较大值，就能涵盖所有的情况，从而得到正确的结果。
+
+```cpp
+class Solution {
+public:
+    int maximumProduct(vector<int>& nums) {
+        if(nums.empty()) return 0;
+        int n = nums.size();
+        sort(nums.begin(), nums.end());
+        int max1 = nums[0] * nums[1] * nums[n - 1];
+        int max2 = nums[n - 1] * nums[n - 2] * nums[n - 3];
+        return max(max1, max2);
     }
-    return Math.max(max1*max2*max3, max1*min1*min2);
-}
+};
+```
+
+
+
+方法2：
+
+找出3个最大的数 || 找出一个最大的和两个最小的，相乘对比也能得到结果，时间复杂度O(n)
+
+```cpp
+class Solution {
+public:
+    int maximumProduct(vector<int>& nums) {
+        int mx1 = INT_MIN, mx2 = INT_MIN, mx3 = INT_MIN;
+        int mn1 = INT_MAX, mn2 = INT_MAX;
+        for (int num : nums) {
+            if (num > mx1) {
+                mx3 = mx2; mx2 = mx1; mx1 = num;
+            } else if (num > mx2) {
+                mx3 = mx2; mx2 = num;
+            } else if (num > mx3) {
+                mx3 = num;
+            }
+            if (num < mn1) {
+                mn2 = mn1; mn1 = num;
+            } else if (num < mn2) {
+                mn2 = num;
+            }
+        }
+        return max(mx1 * mx2 * mx3, mx1 * mn1 * mn2);
+    }
+};
 ```
