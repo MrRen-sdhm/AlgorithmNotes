@@ -69,14 +69,41 @@ public:
 
 [Leetcode](https://leetcode.com/problems/contains-duplicate/description/) / [力扣](https://leetcode-cn.com/problems/contains-duplicate/description/)
 
-```java
-public boolean containsDuplicate(int[] nums) {
-    Set<Integer> set = new HashSet<>();
-    for (int num : nums) {
-        set.add(num);
+**题解**：
+
+方法1：
+
+将元素全部存入哈希表，若最终哈希表中元素个数小于原数组中元素个数，则数组中存在重复元素。
+
+```cpp
+class Solution {
+public:
+    bool containsDuplicate(vector<int>& nums) {
+        unordered_map<int, int> hash;
+        for(auto num : nums) hash[num]++;
+        return hash.size() < nums.size();
     }
-    return set.size() < nums.length;
-}
+};
+```
+
+
+
+方法2：
+
+存入哈希表的过程中就查找哈希表中是否存在当前元素。
+
+```c
+class Solution {
+public:
+    bool containsDuplicate(vector<int>& nums) {
+        unordered_map<int, int> hash;
+        for(auto num : nums) {
+            if (hash.find(num) != hash.end()) return true;
+            ++hash[num];
+        }
+        return false;
+    }
+};
 ```
 
 
@@ -87,33 +114,62 @@ public boolean containsDuplicate(int[] nums) {
 
 [Leetcode](https://leetcode.com/problems/longest-harmonious-subsequence/description/) / [力扣](https://leetcode-cn.com/problems/longest-harmonious-subsequence/description/)
 
+和谐数组是指一个数组里元素的最大值和最小值之间的差别正好是1。现在，给定一个整数数组，你需要在所有可能的子序列中找到最长的和谐子序列的长度。
+
 ```html
 Input: [1,3,2,2,5,2,3,7]
 Output: 5
 Explanation: The longest harmonious subsequence is [3,2,2,2,3].
 ```
 
-和谐序列中最大数和最小数之差正好为 1，应该注意的是序列的元素不一定是数组的连续元素。
+**题解**：
 
-```java
-public int findLHS(int[] nums) {
-    Map<Integer, Integer> countForNum = new HashMap<>();
-    for (int num : nums) {
-        countForNum.put(num, countForNum.getOrDefault(num, 0) + 1);
-    }
-    int longest = 0;
-    for (int num : countForNum.keySet()) {
-        if (countForNum.containsKey(num + 1)) {
-            longest = Math.max(longest, countForNum.get(num + 1) + countForNum.get(num));
+和谐序列中最大数和最小数之差正好为 1，应该注意的是序列的元素不一定是数组的连续元素。我们只要找出来**相差为1的两个数的总共出现个数**就是一个和谐子序列的长度了。
+
+方法1：先遍历一遍数组，使用哈希表建立每个数字跟其出现次数之间的映射，然后再遍历每个数字的时候，只需在 HashMap 中查找该数字加1是否存在，存在就更新结果 res。
+
+```cpp
+class Solution {
+public:
+    int findLHS(vector<int>& nums) {
+        if(nums.empty()) return 0;
+        unordered_map<int, int> m;
+        int res = 0;
+        for(auto num : nums) m[num]++; // 统计各元素出现次数
+        for(auto i : m) { // 遍历哈希表
+            if(m.count(i.first + 1)) // 若哈希表中存在当前元素值+1的元素
+                res = max(res, m[i.first] + m[i.first + 1]); // 更新长度为当前长度和两者次数和的最大值
         }
+        return res;
     }
-    return longest;
-}
+};
 ```
 
 
 
-# 4. 最长连续序列
+方法2：也可以在一个 for 循环中搞定，遍历每个数字时，先累加其映射值，然后查找该数字加1是否存在，存在的话用 m[num] 和 m[num+1] 的和来更新结果 res，同时，还要查找该数字减1是否存在，存在的话用 m[num] 和 m[num-1] 的和来更新结果 res。
+
+```cpp
+class Solution {
+public:
+    int findLHS(vector<int>& nums) {
+        int res = 0;
+        unordered_map<int, int> m;
+        for (int num : nums) { // 遍历各元素
+            ++m[num]; // 存入哈希表
+            if (m.count(num + 1)) // 比当前元素大1的元素存在于哈希表中，更新长度为两者个数和
+                res = max(res, m[num] + m[num + 1]);
+            if (m.count(num - 1)) // 比当前元素小1的元素存在于哈希表中，更新长度为两者个数和
+                res = max(res, m[num] + m[num - 1]);
+        }
+        return res;
+    }
+};
+```
+
+
+
+# 4. 最长连续序列✏️
 
 128\. Longest Consecutive Sequence (Hard)
 
