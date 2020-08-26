@@ -2,6 +2,31 @@
 
 递归和动态规划都是将原问题拆成多个子问题然后求解，他们之间最本质的区别是，动态规划保存了子问题的解，避免重复计算。
 
+1. **状态表示**——如何表示每个状态；例如，背包问题状态表示为二维：`f(i, j)`
+
+   所有状态即**所有满足条件的选法的集合**
+
+   - 集合——所有选法
+     - 条件：1、只从前 i 个物品中选   2、选出物品的总体积 <= j
+   - 属性——集合的属性；例如最大值、最小值、数量
+
+2. **状态计算**——如何计算每个状态；例如，如何计算每个`f(i, j)`
+
+   如何将当前的集合划分为若干个子集，使得每个子集可以用更小的状态表示出来——集合划分
+
+   集合划分的原则：1、不重（非必须）    2、不漏
+
+   01背包问题中，状态`f(i, j)`可划分为两个子集：{ 不含 i ，含 i }，即`f(i - 1 , j)`和`f(i - 1 , j - vi) + wi`
+
+3. 时间复杂度为 `状态的数量 * 状态转移的计算量`
+
+
+
+二维转一维：
+
+- 计算`f[i][j]`时需要使用**当前行左侧**的数据`f[i][j - w[i]]`，**简化为1维时不需要从高到低（逆序）枚举**。
+- 计算`f[i][j]`时需要使用**上一行左侧**的数据`f[i-1][j - w[i]]`，**简化为1维时要从高到低（逆序）枚举**。
+
 
 
 # 斐波那契数列
@@ -112,31 +137,6 @@ public:
 
 
 
-## 4. 信件错排
-
-题目描述：有 N 个 信 和 信封，它们被打乱，求错误装信方式的数量（所有信封都没有装各自的信）。
-
-定义一个数组 dp 存储错误方式数量，dp[i] 表示前 i 个信和信封的错误方式数量。假设第 i 个信装到第 j 个信封里面，而第 j 个信装到第 k 个信封里面。根据 i 和 k 是否相等，有两种情况：
-
-- i==k，交换 i 和 j 的信后，它们的信和信封在正确的位置，但是其余 i-2 封信有 dp[i-2] 种错误装信的方式。由于 j 有 i-1 种取值，因此共有 (i-1)\*dp[i-2] 种错误装信方式。
-- i != k，交换 i 和 j 的信后，第 i 个信和信封在正确的位置，其余 i-1 封信有 dp[i-1] 种错误装信方式。由于 j 有 i-1 种取值，因此共有 (i-1)\*dp[i-1] 种错误装信方式。
-
-综上所述，错误装信数量方式数量为：
-
-<div align="center"> <img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/da1f96b9-fd4d-44ca-8925-fb14c5733388.png" width="350px"> </div><br>
-
-
-
-## 5. 母牛生产
-
-[程序员代码面试指南-P181](#)
-
-题目描述：假设农场中成熟的母牛每年都会生 1 头小母牛，并且永远不会死。第一年有 1 只小母牛，从第二年开始，母牛开始生小母牛。每只小母牛 3 年之后成熟又可以生小母牛。给定整数 N，求 N 年后牛的数量。
-
-第 i 年成熟的牛的数量为：
-
-<div align="center"> <img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/879814ee-48b5-4bcb-86f5-dcc400cb81ad.png" width="250px"> </div><br>
-
 # 三角形路径（线性DP）
 
 120\. 三角形最小路径和 （Medium）[力扣](https://leetcode-cn.com/problems/triangle/)
@@ -165,7 +165,9 @@ public:
 };
 ```
 
-方法2：自底向上
+
+
+🥇方法2：自底向上
 
 需注意两个问题：1、从第一行第一列开始枚举，并且会枚举到`i+1`及`j+1` 因而dp数组需要多初始化2位  2、从第1行第一列开始枚举，因而第`[i, j]`个数字在输入数组中为`triangle[i - 1][j - 1]`
 
@@ -186,6 +188,8 @@ public:
     }
 };
 ```
+
+
 
 优化为一维动规：
 
@@ -264,7 +268,9 @@ public:
 };
 ```
 
-方法2：一维动态规划
+
+
+方法2：一维动态规划，使用到当前行左侧数据，不需要逆序遍历
 
 ```cpp
 class Solution {
@@ -294,6 +300,60 @@ public:
 
 
 
+方法3：原地计算，不使用dp数组
+
+```cpp
+class Solution { // 写法1
+public:
+    int minPathSum(vector<vector<int>>& grid) {
+        int m = grid.size(), n = grid[0].size();
+        if(m == 0 || n == 0)
+            return 0;
+
+        for(int i = 0; i < m; i++)
+        {
+            for(int j = 0; j < n; j++)
+            {
+                if(i == 0 && j == 0) 
+                    continue;
+                else if(i == 0)
+                    grid[i][j] += grid[i][j - 1];
+                else if(j == 0)  
+                    grid[i][j] += grid[i - 1][j];
+                else
+                    grid[i][j] += min(grid[i - 1][j], grid[i][j - 1]);
+            }
+        }
+        
+        return grid[m - 1][n - 1];
+    }
+};
+
+class Solution { // 写法2
+public:
+    int minPathSum(vector<vector<int>>& grid) {
+        int m = grid.size(), n = grid[0].size();
+        if(m == 0 || n == 0)
+            return 0;
+        // 初始化
+        for(int i = 1; i < m; i++)
+            grid[i][0] += grid[i - 1][0]; 
+        for(int i = 1; i < n; i++)
+            grid[0][i] += grid[0][i - 1]; 
+
+        for(int i = 1; i < m; i++)
+        {
+            for(int j = 1; j < n; j++)
+                grid[i][j] += min(grid[i - 1][j], grid[i][j - 1]);
+        }
+
+        return grid[m - 1][n - 1];
+    }
+};
+```
+
+
+
 ## 2. 矩阵的总路径数
 
 62\. Unique Paths (Medium)
@@ -302,7 +362,7 @@ public:
 
 题目描述：统计从矩阵左上角到右下角的路径总数，每次只能向右或者向下移动。
 
-<div align="center"> <img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/dc82f0f3-c1d4-4ac8-90ac-d5b32a9bd75a.jpg" width=""> </div><br>
+<div align="center"> <img src="https://cs-notes-1256109796.cos.ap-guangzhou.myqcloud.com/dc82f0f3-c1d4-4ac8-90ac-d5b32a9bd75a.jpg" width="400"> </div><br>
 
 **[题解](https://leetcode-cn.com/problems/unique-paths/solution/dong-tai-gui-hua-by-powcai-2/)**：
 
@@ -448,7 +508,9 @@ return: 6, for 3 arithmetic slices in A:
 [2, 3, 4]
 ```
 
-**题解**：**dp[i] 表示以 A[i] 为结尾的等差递增子区间中元素的个数**。
+**题解**：
+
+**dp[i] 表示以 A[i] 为结尾的等差递增子区间中元素的个数**。
 
 当 A[i] - A[i-1] == A[i-1] - A[i-2]，那么 [A[i-2], A[i-1], A[i]] 构成一个等差递增子区间。而且在以 A[i-1] 为结尾的递增子区间的后面再加上一个 A[i]，一样可以构成新的递增子区间。
 
@@ -589,7 +651,7 @@ public int numDecodings(String s) {
 
 
 
-# 最长递增子序列（线性DP）
+# 最长递增子序列LIS（线性DP）
 
 已知一个序列 {S<sub>1</sub>, S<sub>2</sub>,...,S<sub>n</sub>}，取出若干数组成新的序列 {S<sub>i1</sub>, S<sub>i2</sub>,..., S<sub>im</sub>}，其中 i1、i2 ... im 保持递增，即新序列中各个数仍然保持原数列中的先后顺序，称新序列为原序列的一个  **子序列**  。
 
@@ -605,7 +667,7 @@ public int numDecodings(String s) {
 
 
 
-## 1. 最长递增子序列
+## 1. 最长递增子序列⭐️
 
 300\. Longest Increasing Subsequence / 最长上升子序列 (Medium)
 
@@ -626,23 +688,22 @@ public int numDecodings(String s) {
   - 为了求以 i 结尾的上升子序列的最大值，需要枚举第 j 个数结尾的上升自序列的长度，并求最大值。
   - 为了求整个数列的最大值，需要枚举每个数结尾的最长上升子序列的长度，并求最大值（这一步在DP循环外完成）。
 - 边界条件：只有 a[i] 一个数时，以 a[i] 结尾的上升子序列的长度为1
-- 转态数量为n，状态转移的计算量为O(n)，因而时间复杂度为O(n^2^)
+- 转态数量为n，状态转移的计算量为O(n)，因而时间复杂度为O(n<sup>2</sup>)
 
 ```cpp
 class Solution {
 public:
     int lengthOfLIS(vector<int>& nums) {
-        vector<int> dp(nums.size() + 1, 0);
+        vector<int> dp(nums.size() + 1, 1); // 只有nums[i]一个数时，长度为1
 
         // 求以nums[i]结尾的上升子序列的长度的最大值
         for(int i = 1; i <= nums.size(); i++) {
-            dp[i] = 1; // 只有nums[i]一个数时，长度为1
             for(int j = 1; j < i; j++) {
                 if(nums[i - 1] > nums[j - 1]) // 第i个数为nums[i-1]
                     dp[i] = max(dp[i], dp[j] + 1);
             }
         }
-        return *max_element(dp.begin(), dp.end()); // 求所有上升子序列的最大值
+        return *max_element(dp.begin(), dp.end()); // 求所有上升子序列的长度最大值
     }
 };
 ```
@@ -671,35 +732,21 @@ tails      len      num
 
 可以看出 tails 数组保持有序，因此在查找 S<sub>i</sub> 位于 tails 数组的位置时就可以使用二分查找。
 
-```java
-public int lengthOfLIS(int[] nums) {
-    int n = nums.length;
-    int[] tails = new int[n];
-    int len = 0;
-    for (int num : nums) {
-        int index = binarySearch(tails, len, num);
-        tails[index] = num;
-        if (index == len) {
-            len++;
-        }
-    }
-    return len;
-}
+lower_bound 返回数组中第一个不小于指定值的元素，如果没有 lower_bound，说明新元素比一维数组的尾元素还要大，直接添加到数组v中，如果有 lower_bound，说明新元素不是最大的，将其 lower_bound 替换为新元素
 
-private int binarySearch(int[] tails, int len, int key) {
-    int l = 0, h = len;
-    while (l < h) {
-        int mid = l + (h - l) / 2;
-        if (tails[mid] == key) {
-            return mid;
-        } else if (tails[mid] > key) {
-            h = mid;
-        } else {
-            l = mid + 1;
+```cpp
+class Solution {
+public:
+    int lengthOfLIS(vector<int>& nums) {
+        vector<int> v;
+        for (auto a : nums) {
+            auto it = lower_bound(v.begin(), v.end(), a);
+            if (it == v.end()) v.push_back(a); // a比尾元素大，添加到数组中
+            else *it = a; // 数组中有大于等于a的数，将此数替换为a
         }
+        return v.size();
     }
-    return l;
-}
+};
 ```
 
 
@@ -863,11 +910,17 @@ public:
 
 
 
-# 最长公共子序列（线性DP）
+# 最长公共子序列LCS（线性DP）⭐️
+
+1143\. Longest Common Subsequence
+
+[Leetcode](https://leetcode.com/problems/longest-common-subsequence/) / [力扣](https://leetcode-cn.com/problems/longest-common-subsequence/)
+
+**题解**：
 
 对于两个子序列 S1 和 S2，找出它们最长的公共子序列。
 
-定义一个二维数组 dp 用来存储最长公共子序列的长度，其中 dp[i][j] 表示 S1 的前 i 个字符与 S2 的前 j 个字符最长公共子序列的长度。考虑 S1<sub>i</sub> 与 S2<sub>j</sub> 值是否相等，分为两种情况：
+定义一个二维数组 dp 用来存储最长公共子序列的长度，其中 dp\[i]\[j] 表示 S1 的**前** i 个字符与 S2 的**前** j 个字符最长公共子序列的长度。考虑 S1<sub>i</sub> 与 S2<sub>j</sub> 值是否相等，分为两种情况：
 
 - 当 S1<sub>i</sub>==S2<sub>j</sub> 时，那么就能在 S1 的前 i-1 个字符与 S2 的前 j-1 个字符最长公共子序列的基础上再加上 S1<sub>i</sub> 这个值，最长公共子序列长度加 1，即 `dp[i][j] = dp[i-1][j-1] + 1`。
 - 当 S1<sub>i</sub> != S2<sub>j</sub> 时，此时最长公共子序列为 S1 的前 i-1 个字符和 S2 的前 j 个字符最长公共子序列，或者 S1 的前 i 个字符和 S2 的前 j-1 个字符最长公共子序列，取它们的最大者，即 `dp[i][j] = max{ dp[i-1][j], dp[i][j-1] }`。
@@ -886,18 +939,14 @@ public:
 
 
 
-## 1. 最长公共子序列
-
-1143\. Longest Common Subsequence
-
-[Leetcode](https://leetcode.com/problems/longest-common-subsequence/) / [力扣](https://leetcode-cn.com/problems/longest-common-subsequence/)
-
 ```cpp
 class Solution {
 public:
     int longestCommonSubsequence(string text1, string text2) {
         int m = text1.size(), n = text2.size();
         vector<vector<int>> dp(m + 1, vector<int>(n + 1, 0));
+        // int dp[m + 1][n + 1];
+        // memset(dp, 0, sizeof(dp));
 
         for(int i = 1; i <= m; i++) {
             for(int j = 1; j <= n; j++) {
@@ -985,6 +1034,8 @@ public:
 
 
 # 0-1 背包
+
+资料：[经典动态规划：0-1 背包问题](https://mp.weixin.qq.com/s/RXfnhSpVBmVneQjDSUSAVQ)
 
 【[OJ](https://www.acwing.com/problem/content/description/2/)】有一个容量为 N 的背包，要用这个背包装下物品的价值最大（可以不恰好装满），这些物品有两个属性：重量 w 和价值 v。
 
@@ -1090,7 +1141,7 @@ int knapsack(int W, int N, vector<int>& weights, vector<int>& values) {
 
 注意：优化时，把行相关的内容全部删除
 
-- 1、初始化一行多列：vector<int> dp(W + 1, 0)
+- 1、初始化一行多列：vector\<int> dp(W + 1, 0)
 - 2、删除状态转移方程中的i：dp[j] = max(dp[j], dp[j - w] + v);
 - 3、仅返回最后一列：return dp[W];
 
@@ -1119,7 +1170,7 @@ int knapsack(int W, int N, vector<int>& weights, vector<int>& values) {
 
 ## 1.集合划分问题
 
-### 1. 划分数组为和相等的两部分
+### 1. 划分数组为和相等的两部分⭐️
 
 416\. Partition Equal Subset Sum (Medium)
 
@@ -1133,32 +1184,94 @@ Output: true
 Explanation: The array can be partitioned as [1, 5, 5] and [11].
 ```
 
-可以看成一个背包大小为 sum/2 的 0-1 背包问题。
+[**题解**](https://mp.weixin.qq.com/s/OzdkF30p5BHelCi6inAnNg)：
 
-```java
-public boolean canPartition(int[] nums) {
-    int sum = computeArraySum(nums);
-    if (sum % 2 != 0) {
-        return false;
-    }
-    int W = sum / 2;
-    boolean[] dp = new boolean[W + 1];
-    dp[0] = true;
-    for (int num : nums) {                 // 0-1 背包一个物品只能用一次
-        for (int i = W; i >= num; i--) {   // 从后往前，先计算 dp[i] 再计算 dp[i-num]
-            dp[i] = dp[i] || dp[i - num];
+可以看成一个背包大小为 sum/2 的 0-1 背包问题。**给一个可装载重量为`sum/2`的背包和`N`个物品，每个物品的重量为`nums[i]`。现在让你装物品，是否存在一种装法，能够恰好将背包装满**？
+
+
+
+- **第一步要明确两点，「状态」和「选择」**。
+
+  状态就是「背包的容量」和「可选择的物品」，选择就是「装进背包」或者「不装进背包」。
+
+- **第二步要明确`dp`数组的定义**。 
+
+  按照背包问题的套路，可以给出如下定义：
+
+  `dp[i][j] = x`表示，对于前`i`个物品，当前背包的容量为`j`时，若`x`为`true`，则说明可以恰好将背包装满，若`x`为`false`，则说明不能恰好将背包装满。
+
+  比如说，如果`dp[4][9] = true`，其含义为：对于容量为 9 的背包，若只是用前 4 个物品，可以有一种方法把背包恰好装满。
+
+  或者说对于本题，含义是对于给定的集合中，若只对前 4 个数字进行选择，存在一个子集的和可以恰好凑出 9。
+
+  根据这个定义，我们想求的最终答案就是`dp[N][sum/2]`，base case 就是`dp[..][0] = true`和`dp[0][..] = false`，因为**背包没有空间的时候，就相当于装满了，而当没有物品可选择的时候，肯定没办法装满背包。**
+
+- **第三步，根据「选择」，思考状态转移的逻辑**。 
+
+  回想刚才的`dp`数组含义，可以根据「选择」对`dp[i][j]`得到以下状态转移：
+
+  如果不把`nums[i]`算入子集，**或者说你不把这第`i`个物品装入背包**，那么是否能够恰好装满背包，取决于上一个状态`dp[i-1][j]`，继承之前的结果。
+
+  如果把`nums[i]`算入子集，**或者说你把这第`i`个物品装入了背包**，那么是否能够恰好装满背包，取决于状态`dp[i - 1][j-nums[i-1]]`。
+
+  首先，由于`i`是从 1 开始的，而数组索引是从 0 开始的，所以第`i`个物品的重量应该是`nums[i-1]`，这一点不要搞混。
+
+  `dp[i - 1][j-nums[i-1]]`也很好理解：你如果装了第`i`个物品，就要看背包的剩余重量`j - nums[i-1]`限制下是否能够被恰好装满。
+
+  换句话说，如果`j - nums[i-1]`的重量可以被恰好装满，那么只要把第`i`个物品装进去，也可恰好装满`j`的重量；否则的话，重量`j`肯定是装不满的。
+
+```cpp
+class Solution {
+public:
+    bool canPartition(vector<int>& nums) {
+        if(nums.empty()) return false;
+        int sum = accumulate(nums.begin(), nums.end(), 0);
+        if(sum % 2 != 0) return false; // 和为奇数，不可能分割为和相等的两个集合
+
+        bool dp[nums.size() + 1][sum/2 + 1];
+        memset(dp, false, sizeof(dp)); // 无物品可选，一定装不满
+        for(int i = 0; i < nums.size(); i++) dp[i][0] = true; // 背包容量为0，一定能装满
+
+        for(int i = 1; i <= nums.size(); i++) {
+            for(int j = 1; j <= sum/2; j++) {
+                if(j >= nums[i-1]) // 装入或不装入背包
+                    dp[i][j] = dp[i-1][j] | dp[i-1][j-nums[i-1]];
+                else // 容量不足，不能装入第i个物品
+                    dp[i][j] = dp[i-1][j];
+            }
         }
+        return dp[nums.size()][sum/2];
     }
-    return dp[W];
-}
+};
+```
 
-private int computeArraySum(int[] nums) {
-    int sum = 0;
-    for (int num : nums) {
-        sum += num;
+
+
+优化：
+
+解与上一行的左侧元素有关，需要逆序。
+
+```cpp
+class Solution {
+public:
+    bool canPartition(vector<int>& nums) {
+        if(nums.empty()) return false;
+        int sum = accumulate(nums.begin(), nums.end(), 0);
+        if(sum % 2 != 0) return false; // 和为奇数，不可能分割为和相等的两个集合
+
+        bool dp[sum/2 + 1];
+        memset(dp, false, sizeof(dp)); // 无物品可选，一定装不满
+        dp[0] = true; // 背包容量为0，一定能装满
+
+        for(auto num : nums) {
+            for(int j = sum/2; j >= 1; j--) {
+                if(j >= num) // 装入或不装入背包
+                    dp[j] = dp[j] | dp[j-num];
+            }
+        }
+        return dp[sum/2];
     }
-    return sum;
-}
+};
 ```
 
 
@@ -1175,7 +1288,9 @@ private int computeArraySum(int[] nums) {
 0
 ```
 
-**题解**：这个问题可以转化为**求数组的一个子集，使得这个子集中的元素的和尽可能接近sum/2，其中sum为数组中所有元素的和**。这样转换之后这个问题就很类似0-1背包问题了：在n件物品中找到m件物品，他们的可以装入背包中，且总价值最大。不过这里不考虑价值，就考虑使得这些元素的和尽量接近sum/2，并且这里的和就相当于背包中的物品重量和。
+**题解**：
+
+这个问题可以转化为**求数组的一个子集，使得这个子集中的元素的和尽可能接近sum/2，其中sum为数组中所有元素的和**。这样转换之后这个问题就很类似0-1背包问题了：在n件物品中找到m件物品，他们的可以装入背包中，且总价值最大。不过这里不考虑价值，就考虑使得这些元素的和尽量接近sum/2，并且这里的和就相当于背包中的物品重量和。
 定义`dp[i][j]`表示前i件物品中，总和最接近j的所有物品的总和，分两种情况：
 
 1、第i件物品没有包括在其中 `dp[i][j] = dp[i-1][j]`
@@ -1207,7 +1322,7 @@ cout << sum - 2*dp[n][sum/2];
 
 
 
-一维动规：因为当前元素仅与上一行左侧元素有关，因而可使用滚动数组。`dp[j] = max(dp[j], dp[j-num] + num)`
+一维动规：因为当前元素仅与上一行左侧元素有关，因而可以优化为一维，但需要逆序遍历。
 
 ```cpp
 vector<int> dp(sum/2 + 1, 0);
@@ -1341,182 +1456,6 @@ public int findMaxForm(String[] strs, int m, int n) {
 
 
 
-## 4. 找零钱的最少硬币数
-
-322\. Coin Change (Medium)
-
-[Leetcode](https://leetcode.com/problems/coin-change/description/) / [力扣](https://leetcode-cn.com/problems/coin-change/description/)
-
-```html
-Example 1:
-coins = [1, 2, 5], amount = 11
-return 3 (11 = 5 + 5 + 1)
-
-Example 2:
-coins = [2], amount = 3
-return -1.
-```
-
-题目描述：给一些面额的硬币，要求用这些硬币来组成给定面额的钱数，并且使得硬币数量最少。硬币可以重复使用。
-
-- 物品：硬币
-- 物品大小：面额
-- 物品价值：数量
-
-**题解**：因为硬币可以重复使用，因此这是一个完全背包问题。完全背包只需要将 0-1 背包的逆序遍历 dp 数组改为正序遍历即可。
-
-子问题：扣除一个硬币后，所需硬币的最少数量
-
-状态转移方程：
-
-<img src="https://labuladong.github.io/ebook/pictures/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92%E8%AF%A6%E8%A7%A3%E8%BF%9B%E9%98%B6/coin.png" alt="img" style="zoom:67%;" />
-
-子问题数目为 O(n)，处理一个子问题的时间为 O(k)，所以总的时间复杂度是 O(kn)
-
-```cpp
-class Solution {
-public:
-    int coinChange(vector<int>& coins, int amount) {
-        if(coins.empty()) return -1;
-        vector<int> dp(amount+1, amount+1); // 数组大小为 amount+1，初始值也为 amount+1
-
-        dp[0] = 0;
-        for(int i = 1; i <= amount; ++i) {
-            for(auto coin : coins) { // 求所有子问题+1的最小值
-                if(i - coin < 0) continue; // 子问题无解，跳过
-                dp[i] = min(dp[i], dp[i - coin] + 1);
-            }
-        }
-
-        return dp[amount] == amount+1 ? -1 : dp[amount];
-    }
-};
-```
-
-
-
-## 5. 找零钱的硬币数组合
-
-518\. Coin Change 2 (Medium)
-
-[Leetcode](https://leetcode.com/problems/coin-change-2/description/) / [力扣](https://leetcode-cn.com/problems/coin-change-2/description/)
-
-```text-html-basic
-Input: amount = 5, coins = [1, 2, 5]
-Output: 4
-Explanation: there are four ways to make up the amount:
-5=5
-5=2+2+1
-5=2+1+1+1
-5=1+1+1+1+1
-```
-
-完全背包问题，使用 dp 记录可达成目标的组合数目。
-
-```java
-public int change(int amount, int[] coins) {
-    if (coins == null) {
-        return 0;
-    }
-    int[] dp = new int[amount + 1];
-    dp[0] = 1;
-    for (int coin : coins) {
-        for (int i = coin; i <= amount; i++) {
-            dp[i] += dp[i - coin];
-        }
-    }
-    return dp[amount];
-}
-```
-
-
-
-## 6. 字符串按单词列表分割
-
-139\. Word Break (Medium)
-
-[Leetcode](https://leetcode.com/problems/word-break/description/) / [力扣](https://leetcode-cn.com/problems/word-break/description/)
-
-```html
-s = "leetcode",
-dict = ["leet", "code"].
-Return true because "leetcode" can be segmented as "leet code".
-```
-
-dict 中的单词没有使用次数的限制，因此这是一个完全背包问题。
-
-该问题涉及到字典中单词的使用顺序，也就是说物品必须按一定顺序放入背包中，例如下面的 dict 就不够组成字符串 "leetcode"：
-
-```html
-["lee", "tc", "cod"]
-```
-
-求解顺序的完全背包问题时，对物品的迭代应该放在最里层，对背包的迭代放在外层，只有这样才能让物品按一定顺序放入背包中。
-
-```java
-public boolean wordBreak(String s, List<String> wordDict) {
-    int n = s.length();
-    boolean[] dp = new boolean[n + 1];
-    dp[0] = true;
-    for (int i = 1; i <= n; i++) {
-        for (String word : wordDict) {   // 对物品的迭代应该放在最里层
-            int len = word.length();
-            if (len <= i && word.equals(s.substring(i - len, i))) {
-                dp[i] = dp[i] || dp[i - len];
-            }
-        }
-    }
-    return dp[n];
-}
-```
-
-
-
-## 7. 组合总和
-
-377\. Combination Sum IV (Medium)
-
-[Leetcode](https://leetcode.com/problems/combination-sum-iv/description/) / [力扣](https://leetcode-cn.com/problems/combination-sum-iv/description/)
-
-```html
-nums = [1, 2, 3]
-target = 4
-
-The possible combination ways are:
-(1, 1, 1, 1)
-(1, 1, 2)
-(1, 2, 1)
-(1, 3)
-(2, 1, 1)
-(2, 2)
-(3, 1)
-
-Note that different sequences are counted as different combinations.
-
-Therefore the output is 7.
-```
-
-涉及顺序的完全背包。
-
-```java
-public int combinationSum4(int[] nums, int target) {
-    if (nums == null || nums.length == 0) {
-        return 0;
-    }
-    int[] maximum = new int[target + 1];
-    maximum[0] = 1;
-    Arrays.sort(nums);
-    for (int i = 1; i <= target; i++) {
-        for (int j = 0; j < nums.length && nums[j] <= i; j++) {
-            maximum[i] += maximum[i - nums[j]];
-        }
-    }
-    return maximum[target];
-}
-```
-
-
-
 # 完全背包
 
 【[OJ](https://www.acwing.com/problem/content/3/)】有一个容量为 N 的背包，要用这个背包装下物品的价值最大（可以不恰好装满），这些物品有两个属性：重量 w 和价值 v，并且每件**物品的数量不限**。
@@ -1565,6 +1504,239 @@ int knapsack(int W, int N, vector<int>& weights, vector<int>& values) {
 状态转移方程为：`dp[i][j] = max{dp[i-1][j], dp[i][j-w] + v}`，即当前值与上一行当前位置及**当前行左侧**位置的值有关，上一行当前位置的值可以再次使用，当前行左侧的值是刚算出来的，因而从左往右遍历并更新dp数组即可。
 
 **总结：转移方向为**↘**的问题须使用逆序循环，转移方向为**→**的问题须使用顺序循环**
+
+
+
+## 1. 找零钱的最少硬币数⭐️
+
+322\. Coin Change (Medium)
+
+[Leetcode](https://leetcode.com/problems/coin-change/description/) / [力扣](https://leetcode-cn.com/problems/coin-change/description/)
+
+题目描述：给一些面额的硬币，要求用这些硬币来组成给定面额的钱数，并且使得硬币数量最少。硬币可以重复使用。
+
+- 物品：硬币
+- 物品大小：面额
+- 物品价值：数量
+
+```html
+Example 1:
+coins = [1, 2, 5], amount = 11
+return 3 (11 = 5 + 5 + 1)
+
+Example 2:
+coins = [2], amount = 3
+return -1.
+```
+
+**题解**：因为硬币可以重复使用，因此这是一个完全背包问题。完全背包只需要将 0-1 背包的逆序遍历 dp 数组改为正序遍历即可。
+
+子问题：扣除一个硬币后，所需硬币的最少数量
+
+
+
+1、**确定 base case**，这个很简单，显然目标金额 `amount` 为 0 时算法返回 0，因为不需要任何硬币就已经凑出目标金额了。
+
+2、**确定「状态」，也就是原问题和子问题中会变化的变量**。由于硬币数量无限，硬币的面额也是题目给定的，只有目标金额会不断地向 base case 靠近，所以唯一的「状态」就是目标金额 `amount`。
+
+3、**确定「选择」，也就是导致「状态」产生变化的行为**。目标金额为什么变化呢，因为你在选择硬币，你每选择一枚硬币，就相当于减少了目标金额。所以说所有硬币的面值，就是你的「选择」。
+
+4、**明确`dp` 数组的定义**。我们这里讲的是自顶向下的解法，所以会有一个递归的 `dp` 函数，一般来说函数的参数就是状态转移中会变化的量，也就是上面说到的「状态」；函数的返回值就是题目要求我们计算的量。就本题来说，状态只有一个，即「目标金额」，题目要求我们计算凑出目标金额所需的最少硬币数量。所以我们可以这样定义 `dp` 函数：
+
+`dp[n]` 的定义：输入一个目标金额 n，返回凑出目标金额 n 的最少硬币数量。
+
+
+
+状态转移方程：
+
+<div align="center"> <img src="https://gitee.com/MrRen-sdhm/Images/raw/master/img/20200817223103.png" width="500px"> </div><br>
+
+子问题数目为 O(n)，处理一个子问题的时间为 O(k)，所以总的时间复杂度是 O(kn)
+
+这里需要将 dp 数组中的除 dp[0] 以外的数初始化为一个较大值，进而便于在循环中求最小值。amount 即为 dp 数组中元素的最大值，假设全部使用 1 元硬币，最多使用 amount 个，因而上限设为 amount + 1 即可。
+
+```cpp
+class Solution {
+public:
+    int coinChange(vector<int>& coins, int amount) {
+        if(coins.empty()) return -1;
+        vector<int> dp(amount+1, amount+1); // 数组大小为 amount+1，初始值也为 amount+1
+
+        dp[0] = 0; // base case
+        for(int i = 1; i <= amount; ++i) {
+            for(auto coin : coins) { // 求所有子问题+1的最小值
+                if(i - coin < 0) continue; // 子问题无解，跳过
+                dp[i] = min(dp[i], dp[i - coin] + 1);
+            }
+        }
+
+        return dp[amount] == amount+1 ? -1 : dp[amount];
+    }
+};
+```
+
+
+
+## 2. 找零钱的硬币数组合
+
+518\. Coin Change 2 (Medium)
+
+[Leetcode](https://leetcode.com/problems/coin-change-2/description/) / [力扣](https://leetcode-cn.com/problems/coin-change-2/description/)
+
+```html
+Input: amount = 5, coins = [1, 2, 5]
+Output: 4
+Explanation: there are four ways to make up the amount:
+5=5
+5=2+2+1
+5=2+1+1+1
+5=1+1+1+1+1
+```
+
+**题解**：
+
+完全背包问题
+
+`dp[i][j]`表示用前 i 个硬币组成钱数为 j 的组合数，组合数就是不加上当前硬币的拼法 `dp[i-1][j]`，还要加上去掉当前硬币值的钱数的组合数。
+
+`dp[i][j] = dp[i - 1][j] + dp[i][j - coins[i - 1]] | j >= coins[i - 1]`
+
+`dp[i][j] = dp[i - 1][j] | j < coins[i - 1]`
+
+```cpp
+class Solution {
+public:
+    int change(int amount, vector<int>& coins) {
+        if(amount == 0) return 1; // 总金额为0时的组合数为1，即不使用任何金币
+        if(coins.empty()) return 0;
+
+        vector<vector<int>> dp(coins.size() + 1, vector<int>(amount + 1, 0));
+        dp[0][0] = 1; // 总金额为0的方案数为1，即不使用任何金币
+        for(int i = 1; i <= coins.size(); i++) {
+            dp[i][0] = 1; // 总金额为0的方案数为1，即不使用任何金币
+            for(int j = 1; j <= amount; j++) {
+                if(j >= coins[i-1])
+                    dp[i][j] = dp[i-1][j] + dp[i][j-coins[i-1]];
+                else
+                    dp[i][j] = dp[i-1][j];
+            }
+        }
+        return dp[coins.size()][amount];
+    }
+};
+```
+
+
+
+优化：
+
+因为状态转移方程中，解仅与当前行及上一行有关，因而可以优化为一维动规，又因为仅和上一行当前元素有关，不需要逆序遍历。
+
+```cpp
+class Solution {
+public:
+    int change(int amount, vector<int>& coins) {
+        if(amount == 0) return 1; // 总金额为0时的组合数为1，即不使用任何金币
+        if(coins.empty()) return 0;
+
+        vector<int> dp(amount + 1, 0);
+        dp[0] = 1; // 总金额为0的方案数为1，即不使用任何金币
+        for(auto coin : coins) {
+            for(int j = 1; j <= amount; j++) {
+                if(j >= coin)
+                    dp[j] = dp[j] + dp[j-coin];
+            }
+        }
+        return dp[amount];
+    }
+};
+```
+
+
+
+## 3. 字符串按单词列表分割✏️
+
+139\. Word Break (Medium)
+
+[Leetcode](https://leetcode.com/problems/word-break/description/) / [力扣](https://leetcode-cn.com/problems/word-break/description/)
+
+```html
+s = "leetcode",
+dict = ["leet", "code"].
+Return true because "leetcode" can be segmented as "leet code".
+```
+
+dict 中的单词没有使用次数的限制，因此这是一个完全背包问题。
+
+该问题涉及到字典中单词的使用顺序，也就是说物品必须按一定顺序放入背包中，例如下面的 dict 就不够组成字符串 "leetcode"：
+
+```html
+["lee", "tc", "cod"]
+```
+
+求解顺序的完全背包问题时，对物品的迭代应该放在最里层，对背包的迭代放在外层，只有这样才能让物品按一定顺序放入背包中。
+
+```java
+public boolean wordBreak(String s, List<String> wordDict) {
+    int n = s.length();
+    boolean[] dp = new boolean[n + 1];
+    dp[0] = true;
+    for (int i = 1; i <= n; i++) {
+        for (String word : wordDict) {   // 对物品的迭代应该放在最里层
+            int len = word.length();
+            if (len <= i && word.equals(s.substring(i - len, i))) {
+                dp[i] = dp[i] || dp[i - len];
+            }
+        }
+    }
+    return dp[n];
+}
+```
+
+
+
+## 4. 组合总和✏️
+
+377\. Combination Sum IV (Medium)
+
+[Leetcode](https://leetcode.com/problems/combination-sum-iv/description/) / [力扣](https://leetcode-cn.com/problems/combination-sum-iv/description/)
+
+```html
+nums = [1, 2, 3]
+target = 4
+
+The possible combination ways are:
+(1, 1, 1, 1)
+(1, 1, 2)
+(1, 2, 1)
+(1, 3)
+(2, 1, 1)
+(2, 2)
+(3, 1)
+
+Note that different sequences are counted as different combinations.
+
+Therefore the output is 7.
+```
+
+涉及顺序的完全背包。
+
+```java
+public int combinationSum4(int[] nums, int target) {
+    if (nums == null || nums.length == 0) {
+        return 0;
+    }
+    int[] maximum = new int[target + 1];
+    maximum[0] = 1;
+    Arrays.sort(nums);
+    for (int i = 1; i <= target; i++) {
+        for (int j = 0; j < nums.length && nums[j] <= i; j++) {
+            maximum[i] += maximum[i - nums[j]];
+        }
+    }
+    return maximum[target];
+}
+```
 
 
 
@@ -2304,7 +2476,7 @@ public int minDistance(String word1, String word2) {
 
 
 
-## 2. 编辑距离
+## 2. 编辑距离⭐️
 
 72\. Edit Distance (Hard)
 
@@ -2332,6 +2504,8 @@ exection -> execution (insert 'u')
 ```
 
 题目描述：修改一个字符串成为另一个字符串，使得修改次数最少。一次修改操作包括：插入一个字符、删除一个字符、替换一个字符。
+
+**题解**：
 
 ```java
 public int minDistance(String word1, String word2) {
@@ -2406,3 +2580,14 @@ public int minSteps(int n) {
 }
 ```
 
+
+
+# 最长回文子串⭐️
+
+[Leetcode](https://leetcode-cn.com/problems/longest-palindromic-substring/)
+
+
+
+# 最长回文子序列⭐️
+
+[Leetcode](https://leetcode-cn.com/problems/longest-palindromic-subsequence/)

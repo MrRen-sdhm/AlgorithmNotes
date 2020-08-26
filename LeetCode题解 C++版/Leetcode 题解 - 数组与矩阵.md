@@ -26,7 +26,9 @@ public:
 
 
 
-# 2. 改变矩阵维度
+
+
+# 2. 改变矩阵维度✏️
 
 566\. Reshape the Matrix (Easy)
 
@@ -64,6 +66,8 @@ public int[][] matrixReshape(int[][] nums, int r, int c) {
 }
 ```
 
+
+
 # 3. 找出数组中最长的连续 1
 
 485\. Max Consecutive Ones (Easy)
@@ -80,6 +84,8 @@ public int findMaxConsecutiveOnes(int[] nums) {
     return max;
 }
 ```
+
+
 
 # 4. 有序矩阵查找
 
@@ -108,6 +114,8 @@ public boolean searchMatrix(int[][] matrix, int target) {
     return false;
 }
 ```
+
+
 
 # 5. 有序矩阵的 Kth Element
 
@@ -259,6 +267,8 @@ public int[] constructArray(int n, int k) {
 }
 ```
 
+
+
 # 9. 数组的度
 
 697\. Degree of an Array (Easy)
@@ -300,6 +310,8 @@ public int findShortestSubArray(int[] nums) {
 }
 ```
 
+
+
 # 10. 对角元素相等的矩阵
 
 766\. Toeplitz Matrix (Easy)
@@ -340,6 +352,8 @@ private boolean check(int[][] matrix, int expectValue, int row, int col) {
 }
 ```
 
+
+
 # 11. 嵌套数组
 
 565\. Array Nesting (Medium)
@@ -376,7 +390,9 @@ public int arrayNesting(int[] nums) {
 }
 ```
 
-# 12. 分隔数组
+
+
+# 12. 分隔数组✏️
 
 769\. Max Chunks To Make Sorted (Medium)
 
@@ -413,15 +429,13 @@ public int maxChunksToSorted(int[] arr) {
 
 [Leetcode](https://leetcode.com/problems/product-of-array-except-self/description/) / [力扣](https://leetcode-cn.com/problems/product-of-array-except-self/description/)
 
-```html
-For example, given [1,2,3,4], return [24,12,8,6].
-```
-
 给定一个数组，创建一个新数组，新数组的每个元素为原始数组中除了该位置上的元素之外所有元素的乘积。
 
 要求时间复杂度为 O(N)，并且不能使用除法。
 
-
+```html
+For example, given [1,2,3,4], return [24,12,8,6].
+```
 
 **题解**：
 

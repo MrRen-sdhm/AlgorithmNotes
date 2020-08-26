@@ -313,3 +313,48 @@ public:
     }
 };
 ```
+
+
+
+# 10. 字母异位词分组
+
+49\. 字母异位词分组
+
+【[力扣](https://leetcode-cn.com/problems/group-anagrams/)】给定一个字符串数组，将字母异位词组合在一起。字母异位词指字母相同，但排列不同的字符串。
+
+```
+输入: ["eat", "tea", "tan", "ate", "nat", "bat"]
+输出:
+[
+  ["ate","eat","tea"],
+  ["nat","tan"],
+  ["bat"]
+]
+```
+
+**题解**：
+
+如果把异位词的字符顺序重新排列，那么会得到相同的结果，所以重新排序是判断是否互为异位词的方法，由于**异位词重新排序后都会得到相同的字符串**，以此作为 key，将所有异位词都保存到字符串数组中，建立 key 和当前的不同的异位词集合个数之间的映射，这里之所以没有建立 key 和其隶属的异位词集合之间的映射，是用了一个小 trick，从而避免了最后再将 HashMap 中的集合拷贝到结果 res 中。当检测到当前的单词不在 HashMap 中，此时知道这个单词将属于一个新的异位词集合，所以将其映射为当前的异位词集合的个数，然后在 res 中新增一个空集合预留集合的存储空间，这样就可以通过其映射值，直接找到新的异位词集合的位置，从而将新的单词存入结果 res。
+
+```cpp
+class Solution {
+public:
+    vector<vector<string>> groupAnagrams(vector<string>& strs) {
+        if(strs.empty()) return {};
+        vector<vector<string>> res;
+        unordered_map<string, int> m;
+
+        for(string str : strs) {
+            string t(str);
+            sort(t.begin(), t.end());
+            if(!m.count(t)) { // 新的集合
+                m[t] = res.size(); // 集合数，即字符串将要存储的二维数组纵坐标
+                res.push_back({}); // 加入空集占位，为后面存储字符串做准备
+            }
+            res[m[t]].push_back(str); // 将字符串加入当前集合
+        }
+        return res;
+    }
+};
+```
+
